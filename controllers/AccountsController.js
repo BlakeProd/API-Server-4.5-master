@@ -79,7 +79,7 @@ module.exports =
                         this.HttpContext.response.unprocessable();
                     }
                 } else {
-                    this.HttpContext.response.ok();
+                    this.HttpContext.response.unverifiedUser();
                 }
             } else {
                 this.HttpContext.response.unprocessable();

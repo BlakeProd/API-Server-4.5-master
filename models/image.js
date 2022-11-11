@@ -11,7 +11,6 @@ class Image extends Model{
         this.GUID = "";
         this.UserId = ""
 
-
         this.addValidator('Title','string');
         this.addValidator('Description', 'string');
         this.addValidator('Date','int');
