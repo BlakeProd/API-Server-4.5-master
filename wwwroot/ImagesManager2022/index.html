@@ -24,7 +24,7 @@
                 <span class="header">Gestionnaire d'images </span>
                 <span class="cmd fa fa-plus-square" id="newImageCmd" title="Ajouter un image"
                     data-toggle="tooltip"></span>
-                <span class="cmd fa fa-minus-square" id="newImageCmd" title="Se connecter" data-toggle="tooltip"></span>
+                <span class="cmd fa fa-minus-square" id="newloginCmd" title="Se connecter" data-toggle="tooltip"></span>
             </div>
         </div>
 
@@ -66,14 +66,13 @@
         <div id="loginDlg">
             <form id="loginForm">
                 <input type="hidden" id="Id_input" value="0">
-                <input type="hidden" id="date_input" value="0">
                 <input type="hidden" id="GUID_input" value="">
 
                 <label for="title_input">Courriel</label>
                 <input type="text" id="email_input" class="form-control" required>
 
                 <label for="decription_input">Mot de passe</label>
-                <input type="text" id="password_input" class="form-control" required>
+                <input type="text" id="input_password" class="form-control" required>
                 <div>
                     <div class="login">Connexion</div>
                     <div class="cancel">Annuler</div>
@@ -328,6 +327,49 @@
                 }]
             });
 
+            $("#newLoginCmd").click(newlogin)
+
+            $("#loginForm").dialog({
+                title: "...",
+                autoOpen: false,
+                modal: true,
+                show: { effect: 'fade', speed: 400 },
+                hide: { effect: 'fade', speed: 400 },
+                width: 640,
+                minWidth: 640,
+                maxWidth: 640,
+                height: 780,
+                minHeight: 780,
+                maxHeight: 780,
+                position: { my: "top", at: "top", of: window },
+                buttons: [{
+                    id: "...",
+                    text: "login",
+                    click: function () {
+                        let image = imageFromForm();
+                        if (image) {
+                            if (createMode) {
+                                POST(image, getImagesList, error);
+                                $(".scrollContainer").scrollTop(0);
+                            }
+                            else
+                                PUT(image, getImagesList, error);
+                            resetimageForm();
+                            holdCheckETag = false;
+                            $(this).dialog("close");
+                        }
+                    }
+                },
+                {
+                    text: "Annuler",
+                    click: function () {
+                        holdCheckETag = false;
+                        $(this).dialog("close");
+                    }
+                }]
+            });
+
+
             $("#confirmDeleteDlg").dialog({
                 title: "Attention!",
                 autoOpen: false,
@@ -357,6 +399,8 @@
                     }
                 }]
             });
+
+
 
             $("#errorDlg").dialog({
                 title: "Erreur...",
