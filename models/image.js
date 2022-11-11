@@ -14,5 +14,9 @@ class Image extends Model{
 
         this.addValidator('Title','string');
         this.addValidator('Description', 'string');
+        this.addValidator('Date','int');
+        this.addValidator('Shared','boolean');
+        this.addValidator('GUID','string');
+        this.addValidator('UserId','int');
     }
 }
