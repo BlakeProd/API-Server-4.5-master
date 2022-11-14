@@ -15,7 +15,6 @@
 </head>
 
 <body>
-
     <div class="mainContainer">
         <div class="headerPanel">
             <div class="headerLayout">
@@ -24,8 +23,11 @@
                 <span class="header">Gestionnaire d'images </span>
                 <span class="cmd fa fa-plus-square" id="newImageCmd" title="Ajouter un image"
                     data-toggle="tooltip"></span>
-                <span class="cmd fa fa-minus-square" id="newloginCmd" title="Se connecter" data-toggle="tooltip"></span>
+
             </div>
+            <span class="cmd fa fa-minus-square" id="newloginCmd" title="Se connecter" data-toggle="tooltip"></span>
+            <span class="cmd fa fa-registered" id="newRegisterCmd" title="Enregister" data-toggle="tooltip"></span>
+
         </div>
 
         <div class="scrollContainer">
@@ -68,10 +70,10 @@
                 <input type="hidden" id="Id_input" value="0">
                 <input type="hidden" id="GUID_input" value="">
 
-                <label for="title_input">Courriel</label>
+                <label for="email_input">Courriel</label>
                 <input type="text" id="email_input" class="form-control" required>
 
-                <label for="decription_input">Mot de passe</label>
+                <label for="input_password">Mot de passe</label>
                 <input type="text" id="input_password" class="form-control" required>
                 <div>
                     <div class="login">Connexion</div>
@@ -86,6 +88,64 @@
             <span id="errorMessage"></span>
         </div>
     </div>
+
+    <div>
+        <div id="registerDlg">
+            <form id="registerForm">
+                <input type="hidden" id="Id_input" value="0">
+                <input type="hidden" id="GUID_input" value="">
+
+                <label for="username_input">Nom d'usager</label>
+                <input id="username_input" class="form-control" required>
+
+                <label for="email_input">Adresse courriel</label>
+                <input id="email_input" class="form-control" required>
+
+                <label for="password_input">Mot de passe</label>
+                <input id="password_input" class="form-control" required>
+
+                <label for="confirm_input">Confirmation mot de passe</label>
+                <input id="confirm_input" class="form-control" required>
+
+                <label for="image">Avatar</label>
+                <div id='image' class='ImageUploader' defaultImage='images/No_Image.png'
+                    waitingImage='images/writing.gif'>
+                </div>
+                <div class="note">Cliquez-Déposez une image</div>
+
+                <div>
+                    <div class="register">Enregistrer</div>
+                    <div class="cancel">Annuler</div>
+                </div>
+            </form>
+        </div>
+        <div id="confirmDeleteDlg">
+            <span id="confirmationMessage"></span>
+        </div>
+        <div id="errorDlg">
+            <span id="errorMessage"></span>
+        </div>
+    </div>
+
+    <div>
+        <div id="confirmDlg">
+            <form id="confirmForm">
+                <label for="confirm_input">Confirmation</label>
+                <input id="username_input" class="form-control" required>
+
+                <div>
+                    <div class="confirm">Confirmer</div>
+                    <div class="cancel">Annuler</div>
+                </div>
+
+            </form>
+        </div>
+        <div id="confirmDeleteDlg">
+            <span id="confirmationMessage"></span>
+        </div>
+        <div id="errorDlg">
+            <span id="errorMessage"></span>
+        </div>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.6.1.min.js"></script>
@@ -224,6 +284,27 @@
             $("#imageDlgOkBtn").text("Ajouter");
             $("#imageDlg").dialog('open');
         }
+
+        function newlogin() {
+            holdCheckETag = true;
+            createMode = true;
+            $("#loginDlg").dialog('option', 'title', "Se connecter");
+            $("#loginDlgOkBtn").text("Connexion");
+            $("#loginDlg").dialog('open');
+        }
+
+        function newregister() {
+            holdCheckETag = true;
+            createMode = true;
+            resetimageForm();
+            ImageUploader.imageRequired('image', true);
+
+            $("#registerDlg").dialog('option', 'title', "Se connecter");
+            $("#registerDlgOkBtn").text("Enregistrer");
+            $("#registerDlg").dialog('open');
+
+        }
+
         function editimage(e) {
             holdCheckETag = true;
             createMode = false;
@@ -329,7 +410,7 @@
 
             $("#newLoginCmd").click(newlogin)
 
-            $("#loginForm").dialog({
+            $("#loginDlg").dialog({
                 title: "...",
                 autoOpen: false,
                 modal: true,
@@ -343,7 +424,7 @@
                 maxHeight: 780,
                 position: { my: "top", at: "top", of: window },
                 buttons: [{
-                    id: "...",
+                    id: "loginDlgOkBtn",
                     text: "login",
                     click: function () {
                         let image = imageFromForm();
@@ -369,64 +450,103 @@
                 }]
             });
 
-
-            $("#confirmDeleteDlg").dialog({
-                title: "Attention!",
+            $("#registerDlg").dialog({
+                title: "...",
                 autoOpen: false,
                 modal: true,
                 show: { effect: 'fade', speed: 400 },
                 hide: { effect: 'fade', speed: 400 },
-                width: 500, minWidth: 500, maxWidth: 500,
-                height: 230, minHeight: 230, maxHeight: 230,
+                width: 640,
+                minWidth: 640,
+                maxWidth: 640,
+                height: 780,
+                minHeight: 780,
+                maxHeight: 780,
                 position: { my: "top", at: "top", of: window },
                 buttons: [{
-                    id: "confirmDeleteDlgOkBtn",
-                    text: "Oui",
+                    id: "registerDlgOkBtn",
+                    text: "register",
                     click: function () {
-                        holdCheckETag = false;
-                        if (imageIdToDelete)
-                            DELETE(imageIdToDelete, getImagesList, error);
-                        imageIdToDelete = 0;
-                        $(this).dialog("close");
+                        let image = imageFromForm();
+                        if (image) {
+                            if (createMode) {
+                                POST(image, getImagesList, error);
+                                $(".scrollContainer").scrollTop(0);
+                            }
+                            else
+                                PUT(image, getImagesList, error);
+                            resetimageForm();
+                            holdCheckETag = false;
+                            $(this).dialog("close");
+                        }
                     }
                 },
                 {
                     text: "Annuler",
                     click: function () {
                         holdCheckETag = false;
-                        imageIdToDelete = 0;
                         $(this).dialog("close");
                     }
                 }]
-            });
-
-
-
-            $("#errorDlg").dialog({
-                title: "Erreur...",
-                autoOpen: false,
-                modal: true,
-                show: { effect: 'fade', speed: 400 },
-                hide: { effect: 'fade', speed: 400 },
-                width: 500, minWidth: 500, maxWidth: 500,
-                height: 230, minHeight: 230, maxHeight: 230,
-                position: { my: "top", at: "top", of: window },
-                buttons: [{
-                    text: "Fermer",
-                    click: function () {
-                        holdCheckETag = false;
-                        imageIdToDelete = 0;
-                        $(this).dialog("close");
-                    }
-                }]
-            });
-
-            $(".scrollContainer").scroll(function () {
-                if ($(".scrollContainer").scrollTop() + $(".scrollContainer").innerHeight() >= $("#imagesList").height()) {
-                    getImagesList(false);
-                }
             });
         }
+
+        $("#confirmDeleteDlg").dialog({
+            title: "Attention!",
+            autoOpen: false,
+            modal: true,
+            show: { effect: 'fade', speed: 400 },
+            hide: { effect: 'fade', speed: 400 },
+            width: 500, minWidth: 500, maxWidth: 500,
+            height: 230, minHeight: 230, maxHeight: 230,
+            position: { my: "top", at: "top", of: window },
+            buttons: [{
+                id: "confirmDeleteDlgOkBtn",
+                text: "Oui",
+                click: function () {
+                    holdCheckETag = false;
+                    if (imageIdToDelete)
+                        DELETE(imageIdToDelete, getImagesList, error);
+                    imageIdToDelete = 0;
+                    $(this).dialog("close");
+                }
+            },
+            {
+                text: "Annuler",
+                click: function () {
+                    holdCheckETag = false;
+                    imageIdToDelete = 0;
+                    $(this).dialog("close");
+                }
+            }]
+        });
+
+
+
+        $("#errorDlg").dialog({
+            title: "Erreur...",
+            autoOpen: false,
+            modal: true,
+            show: { effect: 'fade', speed: 400 },
+            hide: { effect: 'fade', speed: 400 },
+            width: 500, minWidth: 500, maxWidth: 500,
+            height: 230, minHeight: 230, maxHeight: 230,
+            position: { my: "top", at: "top", of: window },
+            buttons: [{
+                text: "Fermer",
+                click: function () {
+                    holdCheckETag = false;
+                    imageIdToDelete = 0;
+                    $(this).dialog("close");
+                }
+            }]
+        });
+
+        $(".scrollContainer").scroll(function () {
+            if ($(".scrollContainer").scrollTop() + $(".scrollContainer").innerHeight() >= $("#imagesList").height()) {
+                getImagesList(false);
+            }
+        });
     </script>
 
 </body>
