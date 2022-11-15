@@ -26,8 +26,15 @@
             </div>
             <span class="cmd fa fa-minus-square" id="newloginCmd" title="Se connecter" data-toggle="tooltip"></span>
             <span class="cmd fa fa-registered" id="newRegisterCmd" title="Enregister" data-toggle="tooltip"></span>
+            <span class="cmd fa-sharp fa-solid fa-address-book" id="profile" title="Mon Profil"
+                data-toggle="tooltip"></span>
 
-            <div style="text-align:right;" id="login_info">test</div>
+
+
+            <div style="float:right;" id="login_info">
+                <span id="avatar_profile"></span>
+                <span id="username_profile"></spanng>
+            </div>
         </div>
 
         <div class="scrollContainer">
@@ -101,10 +108,10 @@
                 <input type="password" id="confirm_input" class="form-control" required>
 
                 <label for="image">Image</label>
-                    <div id='image' class='ImageUploader' defaultImage='images/No_Image.png'
-                        waitingImage='images/writing.gif'>
-                    </div>
-                    <div class="note">Cliquez-Déposez une image</div>
+                <div id='image' class='ImageUploader' defaultImage='images/No_Image.png'
+                    waitingImage='images/writing.gif'>
+                </div>
+                <div class="note">Cliquez-Déposez une image</div>
             </form>
         </div>
         <div id="confirmDeleteDlg">
@@ -273,18 +280,30 @@
             $("#loginDlg").dialog('open');
         }
 
-        function updateConnected(tokeninfo) {
-            console.log(tokeninfo);
-            var token = JSON.parse(localStorage.getItem('token'));
-            console.log(token.Username);
+        function updateConnected() {
+            let userInfo = retrieveUserInfo();
+            console.log(userInfo)
+            console.log(userInfo.Name)
+            // afficher avatar et nom usager
+            var image = "../images/" + userInfo.AvatarGUID + ".png";
+            $('#avatar_profile').append("<img style='height:50px; width:50px; border-radius:50px; border: solid black 2px;' src='" + image +"'/>");
+            $("#username_profile").text(userInfo.Name);
+
+
+            //delete bouton login et register
+            
         }
 
-        function retriveCredentials() {
-            return {Email:$("#email_input").val(), Password:$("#password_input").val()}
+        function retrieveUserInfo() {
+            return JSON.parse(localStorage.getItem('user'));
+        }
+
+        function retrieveCredentials() {
+            return { Email: $("#email_input").val(), Password: $("#password_input").val() }
         }
 
         function retriveRegisterCredentials() {
-            return {Username:$("#username_input").val(), Email:$("#email_input").val(), Password:$("#password_input").val(), AvatarGUID:$("#image")}
+            return { Username: $("#username_input").val(), Email: $("#email_input").val(), Password: $("#password_input").val(), AvatarGUID: $("#image") }
         }
 
         function registerIn() {
@@ -420,7 +439,7 @@
                     id: "loginDlgOkBtn",
                     text: "login",
                     click: function () {
-                        login(retriveCredentials(),updateConnected,error);
+                        login(retrieveCredentials(), updateConnected, error);
                         $(this).dialog("close");
                     }
                 },
@@ -532,4 +551,5 @@
         });
     </script>
 </body>
+
 </html>

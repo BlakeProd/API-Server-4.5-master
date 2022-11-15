@@ -49,7 +49,7 @@ function PUT(image, successCallBack, errorCallBack) {
 }
 
 function collect_Id(id, errorCallBack) {
-    localStorage.setItem('id',tokeninfo.Access_token);
+    localStorage.setItem('id', tokeninfo.Access_token);
 }
 
 function DELETE(id, successCallBack, errorCallBack) {
@@ -62,35 +62,47 @@ function DELETE(id, successCallBack, errorCallBack) {
 }
 
 function storeToken(tokeninfo) {
-    localStorage.setItem('token',tokeninfo.Access_token);
+    localStorage.setItem('token', tokeninfo.Access_token);
 }
-
-function login(credentials,successCallBack, errorCallBack) {
+function getUserInfo(userId, successCallBack, errorCallBack) {
     $.ajax({
-        url: host + "token",
-        type: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify(credentials),
-        success: (tokeninfo) => { 
-           storeToken(tokeninfo);
-           successCallBack(tokeninfo) },
+        url: host + "accounts/index/" + userId,
+        type: 'GET',
+        success: (userInfo) => {
+            localStorage.setItem('user', JSON.stringify(userInfo));
+            successCallBack();
+        },
         error: function (jqXHR) { errorCallBack(jqXHR.status) }
-    });
+    })
 }
+function login(credentials, successCallBack, errorCallBack) {
+            $.ajax({
+                url: host + "token",
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(credentials),
+                success: (tokenInfo) => {
+                    storeToken(tokenInfo);
+                    getUserInfo(tokenInfo.UserId, successCallBack, errorCallBack);
+                },
+                error: function (jqXHR) { errorCallBack(jqXHR.status) }
+            });
+        }
 
-function register(credentials,successCallBack, errorCallBack) {
-    $.ajax({
-        url: host + "token",
-        type: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify(credentials),
-        success: (tokeninfo) => { 
-           storeToken(tokeninfo);
-           successCallBack(tokeninfo) },
-        error: function (jqXHR) { errorCallBack(jqXHR.status) }
-    });
-}
+function register(credentials, successCallBack, errorCallBack) {
+            $.ajax({
+                url: host + "token",
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(credentials),
+                success: (tokeninfo) => {
+                    storeToken(tokeninfo);
+                    successCallBack(tokeninfo)
+                },
+                error: function (jqXHR) { errorCallBack(jqXHR.status) }
+            });
+        }
 
 function confirm() {
-    
-}
+
+        }
