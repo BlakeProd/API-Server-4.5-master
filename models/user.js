@@ -15,6 +15,7 @@ class User extends Model{
         this.addValidator('Name','string');
         this.addValidator('Email','email');
         this.addValidator('Password','string');
+        this.addValidator('AvatarGUID','string');
         this.addValidator('Created','integer');
 
     }

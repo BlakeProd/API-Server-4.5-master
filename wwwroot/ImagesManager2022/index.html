@@ -23,11 +23,11 @@
                 <span class="header">Gestionnaire d'images </span>
                 <span class="cmd fa fa-plus-square" id="newImageCmd" title="Ajouter un image"
                     data-toggle="tooltip"></span>
-
             </div>
             <span class="cmd fa fa-minus-square" id="newloginCmd" title="Se connecter" data-toggle="tooltip"></span>
             <span class="cmd fa fa-registered" id="newRegisterCmd" title="Enregister" data-toggle="tooltip"></span>
 
+            <div style="text-align:right;" id="login_info">test</div>
         </div>
 
         <div class="scrollContainer">
@@ -67,18 +67,11 @@
     <div>
         <div id="loginDlg">
             <form id="loginForm">
-                <input type="hidden" id="Id_input" value="0">
-                <input type="hidden" id="GUID_input" value="">
-
                 <label for="email_input">Courriel</label>
                 <input type="text" id="email_input" class="form-control" required>
 
-                <label for="input_password">Mot de passe</label>
-                <input type="text" id="input_password" class="form-control" required>
-                <div>
-                    <div class="login">Connexion</div>
-                    <div class="cancel">Annuler</div>
-                </div>
+                <label for="password_input">Mot de passe</label>
+                <input type="password" id="password_input" class="form-control" required>
             </form>
         </div>
         <div id="confirmDeleteDlg">
@@ -102,21 +95,16 @@
                 <input id="email_input" class="form-control" required>
 
                 <label for="password_input">Mot de passe</label>
-                <input id="password_input" class="form-control" required>
+                <input type="password" id="password_input" class="form-control" required>
 
                 <label for="confirm_input">Confirmation mot de passe</label>
-                <input id="confirm_input" class="form-control" required>
+                <input type="password" id="confirm_input" class="form-control" required>
 
-                <label for="image">Avatar</label>
-                <div id='image' class='ImageUploader' defaultImage='images/No_Image.png'
-                    waitingImage='images/writing.gif'>
-                </div>
-                <div class="note">Cliquez-Déposez une image</div>
-
-                <div>
-                    <div class="register">Enregistrer</div>
-                    <div class="cancel">Annuler</div>
-                </div>
+                <label for="image">Image</label>
+                    <div id='image' class='ImageUploader' defaultImage='images/No_Image.png'
+                        waitingImage='images/writing.gif'>
+                    </div>
+                    <div class="note">Cliquez-Déposez une image</div>
             </form>
         </div>
         <div id="confirmDeleteDlg">
@@ -132,12 +120,6 @@
             <form id="confirmForm">
                 <label for="confirm_input">Confirmation</label>
                 <input id="username_input" class="form-control" required>
-
-                <div>
-                    <div class="confirm">Confirmer</div>
-                    <div class="cancel">Annuler</div>
-                </div>
-
             </form>
         </div>
         <div id="confirmDeleteDlg">
@@ -234,7 +216,6 @@
             for (let image of images) {
                 insertIntoImageList(image);
             }
-
             $(".scrollContainer").scrollTop(previousScrollPosition);
             $(".editCmd").off();
             $(".deleteCmd").off();
@@ -244,7 +225,6 @@
 
             $('[data-toggle="tooltip"]').tooltip();
         }
-
         function error(status) {
             let errorMessage = "";
             switch (status) {
@@ -285,7 +265,7 @@
             $("#imageDlg").dialog('open');
         }
 
-        function newlogin() {
+        function signIn() {
             holdCheckETag = true;
             createMode = true;
             $("#loginDlg").dialog('option', 'title', "Se connecter");
@@ -293,16 +273,29 @@
             $("#loginDlg").dialog('open');
         }
 
-        function newregister() {
+        function updateConnected(tokeninfo) {
+            console.log(tokeninfo);
+            var token = JSON.parse(localStorage.getItem('token'));
+            console.log(token.Username);
+        }
+
+        function retriveCredentials() {
+            return {Email:$("#email_input").val(), Password:$("#password_input").val()}
+        }
+
+        function retriveRegisterCredentials() {
+            return {Username:$("#username_input").val(), Email:$("#email_input").val(), Password:$("#password_input").val(), AvatarGUID:$("#image")}
+        }
+
+        function registerIn() {
             holdCheckETag = true;
             createMode = true;
             resetimageForm();
             ImageUploader.imageRequired('image', true);
 
-            $("#registerDlg").dialog('option', 'title', "Se connecter");
+            $("#registerDlg").dialog('option', 'title', "Enregistrement");
             $("#registerDlgOkBtn").text("Enregistrer");
             $("#registerDlg").dialog('open');
-
         }
 
         function editimage(e) {
@@ -408,7 +401,7 @@
                 }]
             });
 
-            $("#newLoginCmd").click(newlogin)
+            $("#newloginCmd").click(signIn)
 
             $("#loginDlg").dialog({
                 title: "...",
@@ -416,29 +409,19 @@
                 modal: true,
                 show: { effect: 'fade', speed: 400 },
                 hide: { effect: 'fade', speed: 400 },
-                width: 640,
-                minWidth: 640,
-                maxWidth: 640,
-                height: 780,
-                minHeight: 780,
-                maxHeight: 780,
+                width: 340,
+                minWidth: 340,
+                maxWidth: 340,
+                height: 400,
+                minHeight: 400,
+                maxHeight: 400,
                 position: { my: "top", at: "top", of: window },
                 buttons: [{
                     id: "loginDlgOkBtn",
                     text: "login",
                     click: function () {
-                        let image = imageFromForm();
-                        if (image) {
-                            if (createMode) {
-                                POST(image, getImagesList, error);
-                                $(".scrollContainer").scrollTop(0);
-                            }
-                            else
-                                PUT(image, getImagesList, error);
-                            resetimageForm();
-                            holdCheckETag = false;
-                            $(this).dialog("close");
-                        }
+                        login(retriveCredentials(),updateConnected,error);
+                        $(this).dialog("close");
                     }
                 },
                 {
@@ -450,8 +433,7 @@
                 }]
             });
 
-            $("#newRegisterCmd").click(newregister)
-
+            $("#newRegisterCmd").click(registerIn)
             $("#registerDlg").dialog({
                 title: "...",
                 autoOpen: false,
@@ -469,14 +451,17 @@
                     id: "registerDlgOkBtn",
                     text: "register",
                     click: function () {
-                        let image = imageFromForm();
-                        if (image) {
+                        register(retriveRegisterCredentials(), updateConnected, error)
+
+                        let profile = imageFromForm();
+                        add(window.localStorage.getItem('username_input'))
+                        if (profile) {
                             if (createMode) {
-                                POST(image, getImagesList, error);
+                                POST(profile, getImagesList, error);
                                 $(".scrollContainer").scrollTop(0);
                             }
                             else
-                                PUT(image, getImagesList, error);
+                                PUT(profile, getImagesList, error);
                             resetimageForm();
                             holdCheckETag = false;
                             $(this).dialog("close");
@@ -494,22 +479,20 @@
         }
 
         $("#confirmDeleteDlg").dialog({
-            title: "Attention!",
+            title: "Confirmation !",
             autoOpen: false,
             modal: true,
             show: { effect: 'fade', speed: 400 },
             hide: { effect: 'fade', speed: 400 },
-            width: 500, minWidth: 500, maxWidth: 500,
-            height: 230, minHeight: 230, maxHeight: 230,
+            width: 400, minWidth: 400, maxWidth: 400,
+            height: 150, minHeight: 150, maxHeight: 150,
             position: { my: "top", at: "top", of: window },
             buttons: [{
                 id: "confirmDeleteDlgOkBtn",
                 text: "Oui",
                 click: function () {
                     holdCheckETag = false;
-                    if (imageIdToDelete)
-                        DELETE(imageIdToDelete, getImagesList, error);
-                    imageIdToDelete = 0;
+
                     $(this).dialog("close");
                 }
             },

@@ -1,4 +1,5 @@
 const apiBaseURL = "http://localhost:5000/api/images";
+const host = "http://localhost:5000/";
 
 function HEAD(successCallBack, errorCallBack) {
     $.ajax({
@@ -46,6 +47,11 @@ function PUT(image, successCallBack, errorCallBack) {
         error: function (jqXHR) { errorCallBack(jqXHR.status) }
     });
 }
+
+function collect_Id(id, errorCallBack) {
+    localStorage.setItem('id',tokeninfo.Access_token);
+}
+
 function DELETE(id, successCallBack, errorCallBack) {
     $.ajax({
         url: apiBaseURL + "/" + id,
@@ -53,4 +59,38 @@ function DELETE(id, successCallBack, errorCallBack) {
         success: () => { successCallBack() },
         error: function (jqXHR) { errorCallBack(jqXHR.status) }
     });
+}
+
+function storeToken(tokeninfo) {
+    localStorage.setItem('token',tokeninfo.Access_token);
+}
+
+function login(credentials,successCallBack, errorCallBack) {
+    $.ajax({
+        url: host + "token",
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(credentials),
+        success: (tokeninfo) => { 
+           storeToken(tokeninfo);
+           successCallBack(tokeninfo) },
+        error: function (jqXHR) { errorCallBack(jqXHR.status) }
+    });
+}
+
+function register(credentials,successCallBack, errorCallBack) {
+    $.ajax({
+        url: host + "token",
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(credentials),
+        success: (tokeninfo) => { 
+           storeToken(tokeninfo);
+           successCallBack(tokeninfo) },
+        error: function (jqXHR) { errorCallBack(jqXHR.status) }
+    });
+}
+
+function confirm() {
+    
 }
