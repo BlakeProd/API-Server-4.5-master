@@ -24,19 +24,21 @@
                 <span class="cmd fa fa-plus-square" id="newImageCmd" title="Ajouter un image"
                     data-toggle="tooltip"></span>
             </div>
-            <span class="cmd fa fa-minus-square" id="newloginCmd" title="Se connecter" data-toggle="tooltip"></span>
-            <span class="cmd fa fa-registered" id="newRegisterCmd" title="Enregister" data-toggle="tooltip"></span>
-            <span class="cmd fa-sharp fa-solid fa-address-book" id="profile" title="Mon Profil"
-                data-toggle="tooltip"></span>
 
-
-
-            <div style="float:right;" id="login_info">
+            <div class="profil" id="login_info">
                 <span id="avatar_profile"></span>
-                <span id="username_profile"></spanng>
+                <span id="username_profile"></span>
+                <span class="cmd fa-sharp fa-solid fa-address-book" id="profile" title="Mon Profil"
+                    data-toggle="tooltip"></span>
+                <span class="fa-sharp fa-solid fa-arrow-up-from-bracket" id="logout" title="Se déconnecter"
+                    data-toggle="tooltip"></span>
+            </div>
+
+            <div class="relative">
+                <span class="cmd fa fa-minus-square" id="newloginCmd" title="Se connecter" data-toggle="tooltip"></span>
+                <span class="cmd fa fa-registered" id="newRegisterCmd" title="Enregister" data-toggle="tooltip"></span>
             </div>
         </div>
-
         <div class="scrollContainer">
             <div id="imagesList">
                 <!-- filled programmatically-->
@@ -137,6 +139,16 @@
         </div>
     </div>
 
+    <div>
+        <div id="logoutDlg">Voulez-vous vous déconnecter? </div>
+        <div id="confirmDeleteDlg">
+            <span id="confirmationMessage"></span>
+        </div>
+        <div id="errorDlg">
+            <span id="errorMessage"></span>
+        </div>
+    </div>
+
     <script src="https://code.jquery.com/jquery-3.6.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.maskedinput/1.4.1/jquery.maskedinput.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
@@ -158,6 +170,9 @@
         let appendCount = 3;
         let previousScrollPosition = 0;
         let appendMode = false;
+
+        $("#profile").hide();
+        $("#logout").hide();
 
         init_UI();
         HEAD(checkETag, error);
@@ -280,18 +295,28 @@
             $("#loginDlg").dialog('open');
         }
 
+        function signOut() {
+            holdCheckETag = true;
+            createMode = true;
+            $("#loginDlg").dialog('option', 'title', "Se déconnecter");
+            $("#loginDlgOkBtn").text("Déconnexion");
+            $("#loginDlg").dialog('open');
+        }
+
         function updateConnected() {
             let userInfo = retrieveUserInfo();
             console.log(userInfo)
             console.log(userInfo.Name)
             // afficher avatar et nom usager
             var image = "../images/" + userInfo.AvatarGUID + ".png";
-            $('#avatar_profile').append("<img style='height:50px; width:50px; border-radius:50px; border: solid black 2px;' src='" + image +"'/>");
+            $('#avatar_profile').append("<img style='height:50px; width:50px; border-radius:50px; border: solid black 2px;' src='" + image + "'/>");
             $("#username_profile").text(userInfo.Name);
 
-
+            $("#newloginCmd").hide();
+            $("#newRegisterCmd").hide();
+            $("#profile").show();
+            $("#logout").show();
             //delete bouton login et register
-            
         }
 
         function retrieveUserInfo() {
@@ -315,6 +340,10 @@
             $("#registerDlg").dialog('option', 'title', "Enregistrement");
             $("#registerDlgOkBtn").text("Enregistrer");
             $("#registerDlg").dialog('open');
+        }
+
+        function logoutAccount() {
+
         }
 
         function editimage(e) {
@@ -452,39 +481,25 @@
                 }]
             });
 
-            $("#newRegisterCmd").click(registerIn)
-            $("#registerDlg").dialog({
+            $("newLogoutCmd").click(logoutAccount)
+            $("#logoutDlg").dialog({
                 title: "...",
                 autoOpen: false,
                 modal: true,
                 show: { effect: 'fade', speed: 400 },
                 hide: { effect: 'fade', speed: 400 },
-                width: 640,
-                minWidth: 640,
-                maxWidth: 640,
-                height: 780,
-                minHeight: 780,
-                maxHeight: 780,
+                width: 340,
+                minWidth: 340,
+                maxWidth: 340,
+                height: 480,
+                minHeight: 480,
+                maxHeight: 480,
                 position: { my: "top", at: "top", of: window },
                 buttons: [{
-                    id: "registerDlgOkBtn",
-                    text: "register",
+                    id: "...",
+                    text: "logout",
                     click: function () {
-                        register(retriveRegisterCredentials(), updateConnected, error)
-
-                        let profile = imageFromForm();
-                        add(window.localStorage.getItem('username_input'))
-                        if (profile) {
-                            if (createMode) {
-                                POST(profile, getImagesList, error);
-                                $(".scrollContainer").scrollTop(0);
-                            }
-                            else
-                                PUT(profile, getImagesList, error);
-                            resetimageForm();
-                            holdCheckETag = false;
-                            $(this).dialog("close");
-                        }
+                        
                     }
                 },
                 {
@@ -495,7 +510,53 @@
                     }
                 }]
             });
+
         }
+
+        $("#newRegisterCmd").click(registerIn)
+        $("#registerDlg").dialog({
+            title: "...",
+            autoOpen: false,
+            modal: true,
+            show: { effect: 'fade', speed: 400 },
+            hide: { effect: 'fade', speed: 400 },
+            width: 640,
+            minWidth: 640,
+            maxWidth: 640,
+            height: 780,
+            minHeight: 780,
+            maxHeight: 780,
+            position: { my: "top", at: "top", of: window },
+            buttons: [{
+                id: "registerDlgOkBtn",
+                text: "register",
+                click: function () {
+                    register(retriveRegisterCredentials(), updateConnected, error)
+
+                    let profile = imageFromForm();
+                    add(window.localStorage.getItem('username_input'))
+                    if (profile) {
+                        if (createMode) {
+                            POST(profile, getImagesList, error);
+                            $(".scrollContainer").scrollTop(0);
+                        }
+                        else
+                            PUT(profile, getImagesList, error);
+                        resetimageForm();
+                        holdCheckETag = false;
+                        $(this).dialog("close");
+                    }
+                }
+            },
+            {
+                text: "Annuler",
+                click: function () {
+                    holdCheckETag = false;
+                    $(this).dialog("close");
+                }
+            }]
+        });
+        
 
         $("#confirmDeleteDlg").dialog({
             title: "Confirmation !",

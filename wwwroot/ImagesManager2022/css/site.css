@@ -186,6 +186,16 @@ label {
     font-weight: 600;
 }
 
+div.relative {
+    position: relative;
+    left: 900px;
+  }
+
+  div.profil {
+    position: relative;
+    left: 600px;
+  }
+
 div2,
 span2 {
     border: 1px solid red;

@@ -61,6 +61,10 @@ function DELETE(id, successCallBack, errorCallBack) {
     });
 }
 
+function deleteToken(tokeninfo) {
+    
+}
+
 function storeToken(tokeninfo) {
     localStorage.setItem('token', tokeninfo.Access_token);
 }
@@ -88,6 +92,10 @@ function login(credentials, successCallBack, errorCallBack) {
                 error: function (jqXHR) { errorCallBack(jqXHR.status) }
             });
         }
+
+function logout(credentials, successCallBack, errorCallBack) {
+
+}
 
 function register(credentials, successCallBack, errorCallBack) {
             $.ajax({
