@@ -9,7 +9,7 @@ module.exports =
         constructor(HttpContext,) {
             super(HttpContext, new usersRepository(), true /* read authorisation */);
         }
-
+        // accounts/index/ID
         index(id) {
             if (!isNaN(id)) {
                 this.HttpContext.response.JSON(this.repository.get(id));
@@ -61,8 +61,8 @@ module.exports =
 
         //GET : /accounts/verify?id=...&code=.....
         verify() {
-            let id = parseInt(this.HttpContext.path.params.Id);
-            let code = parseInt(this.HttpContext.path.params.VerifyCode);
+            let id = parseInt(this.HttpContext.path.params.id);
+            let code = parseInt(this.HttpContext.path.params.code);
             let userFound = this.repository.findByField('Id', id);
             if (userFound) {
                 if (userFound.VerifyCode == code) {

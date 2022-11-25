@@ -33,8 +33,12 @@ function POST(data, successCallBack, errorCallBack) {
         type: 'POST',
         contentType: 'application/json',
         data: JSON.stringify(data),
-        success: (data) => { successCallBack(data) },
-        error: function (jqXHR) { errorCallBack(jqXHR.status) }
+        success: (userCreated) => { 
+            successCallBack(userCreated) 
+        },
+        error: function (jqXHR) { 
+            errorCallBack(jqXHR.status) 
+        }
     });
 }
 function PUT(image, successCallBack, errorCallBack) {
@@ -44,7 +48,9 @@ function PUT(image, successCallBack, errorCallBack) {
         contentType: 'application/json',
         data: JSON.stringify(image),
         success: () => { successCallBack() },
-        error: function (jqXHR) { errorCallBack(jqXHR.status) }
+        error: function (jqXHR) { 
+            errorCallBack(jqXHR.status) 
+        }
     });
 }
 
@@ -122,13 +128,15 @@ function register(profile, successCallBack, errorCallBack) {
         success: (profile) => {
             successCallBack(profile)
         },
-        error: function (jqXHR) { errorCallBack(jqXHR.status) }
+        error: function (jqXHR) { 
+            errorCallBack(jqXHR.status) 
+        }
     });
 }
 
-function verify(verifyUser, successCallBack, errorCallBack) {
+function verifyEmail(verifyUser, successCallBack, errorCallBack) {
     $.ajax({
-        url: host + "accounts/verify",
+        url: host + "accounts/verify?id=" + verifyUser.Id + "&code=" + verifyUser.VerifyCode,
         type: 'GET',
         contentType: 'application/json',
         data: JSON.stringify(verifyUser),

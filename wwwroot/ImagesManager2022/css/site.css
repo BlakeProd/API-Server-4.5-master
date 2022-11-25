@@ -43,11 +43,28 @@ body {
 
 .connectionPanel {
     display: grid;
-    grid-template-columns: 80px auto 60px 60px;
+    grid-template-columns: 60px auto 40px 40px;
     align-items: center;
     margin-left: auto;
     margin-top: 10px;
     margin-bottom: 10px;
+}
+
+.loggedUserAvatarContainer {
+    width: 60px;
+    height: 60px;
+}
+
+.loggedUserAvatarContainer img {
+    width: 100%;
+    border-radius: 30px;
+
+}
+
+.connectionPanel #loggedUserName {
+    margin-left: 5px;
+    font-weight: bolder;
+    font-size: 1.5em;
 }
 
 .scrollContainer {
@@ -210,6 +227,7 @@ label {
     background-position: center;
     background-repeat: no-repeat;
 }
+
 
 .avatarControl {
     width: 200px !important;

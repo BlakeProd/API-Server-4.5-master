@@ -25,15 +25,12 @@
                     data-toggle="tooltip"></span>
             </div>
             <div class="connectionPanel">
-                <div class="profil" id="login_info">
-                    <span id="avatar_profile"></span>
-                    <span id="username_profile"></span>
-                    <span class="cmd fa-sharp fa-solid fa-address-book" id="profile" title="Mon Profil"
-                        data-toggle="tooltip"></span>
-                    <span class="cmd fa fa-minus-square" id="newLogoutCmd" title="Se déconnecter"
-                        data-toggle="tooltip"></span>
-                </div>
-
+                <div class="loggedUserAvatarContainer" id="loggedUserAvatarContainer"></div>
+                <div id="loggedUserName"></div>
+                <span class="cmd fa-sharp fa-solid fa-address-book" id="profile" title="Mon Profil"
+                    data-toggle="tooltip"></span>
+                <span class="cmd fa fa-minus-square" id="newLogoutCmd" title="Se déconnecter"
+                    data-toggle="tooltip"></span>
                 <div>
                     <span class="cmd fa-sharp fa-solid fa-arrow-up-from-bracket" id="newloginCmd" title="Se connecter"
                         data-toggle="tooltip"></span>
@@ -132,10 +129,11 @@
     </div>
 
     <div>
-        <div id="confirmationDlg">
+        <div id="emailVerificationDlg">
             <form id="confirmForm">
-                <label for="confirm_input">Confirmation</label>
-                <input id="confirm_input" class="form-control" required>
+                <input type="hidden" id="verify_code_UserId_input" value="0">
+                <label for="verify_code_input">Confirmation</label>
+                <input id="verify_code_input" class="form-control" required>
             </form>
         </div>
         <div id="confirmDeleteDlg">
@@ -292,7 +290,7 @@
             holdCheckETag = true;
             createMode = true;
             resetimageForm();
-            ImageUploader.imageRequired('image', true);
+            ImageUploader.imageRequired('image', false); // todo a remettre  vrai
             $("#imageDlg").dialog('option', 'title', "Ajout d'image");
             $("#imageDlgOkBtn").text("Ajouter");
             $("#imageDlg").dialog('open');
@@ -315,9 +313,9 @@
         }
 
         function updateRegister() {
-            $("#confirmationDlg").dialog('option', 'title', "Confirmation");
-            $("#confirmationDlgOkBtn").text("Confirmation");
-            $("#confirmationDlg").dialog('open');
+            $("#emailVerificationDlg").dialog('option', 'title', "Confirmation");
+            $("#emailVerificationDlgOkBtn").text("Confirmation");
+            $("#emailVerificationDlg").dialog('open');
         }
 
         function updateConfirmation() {
@@ -325,29 +323,32 @@
             console.log(userInfo)
             console.log(userInfo.Name)
             // afficher avatar et nom usager
-            var image = "../images/" + userInfo.AvatarGUID + ".png";
-            $('#avatar').append("<img id='photo' style='height:50px; width:50px; border-radius:50px; border: solid black 2px;' src='" + image + "'; id/>");
-            $("#profile_name").text(userInfo.Name);
+            $('#loggedUserAvatarContainer').empty();
+            $('#loggedUserAvatarContainer').append($("<img src='" + userInfo.AvatarURL + "' />"));
+            $("#loggedUserName").text(userInfo.Name);
 
             $("#newloginCmd").hide();
             $("#newRegisterCmd").hide();
             $("#profile").show();
             $("#newLogoutCmd").show();
+            getImagesList();
         }
 
         function updateConnected() {
             let userInfo = retrieveUserInfo();
             console.log(userInfo)
             console.log(userInfo.Name)
+
             // afficher avatar et nom usager
-            var image = "../images/" + userInfo.AvatarGUID + ".png";
-            $('#avatar_profile').append("<img id='photo' style='height:50px; width:50px; border-radius:50px; border: solid black 2px;' src='" + image + "'; id/>");
-            $("#username_profile").text(userInfo.Name);
+            $('#loggedUserAvatarContainer').empty();
+            $('#loggedUserAvatarContainer').append($("<img src='" + userInfo.AvatarURL + "' />"));
+            $("#loggedUserName").text(userInfo.Name);
 
             $("#newloginCmd").hide();
             $("#newRegisterCmd").hide();
             $("#profile").show();
             $("#newLogoutCmd").show();
+            getImagesList();
         }
 
         function updateDisconnect() {
@@ -392,41 +393,35 @@
             }
         }
 
-        function VerifyFromForm() {
+        let userIdToConfirm = 0;
+        function showEmailVerificationDlg(user) {
+            userIdToConfirm = user.Id;
+            holdCheckETag = true;
+
+            $("#emailVerificationDlg").dialog('option', 'title', "Vérification de courriel");
+            $("#emailVerificationDlgOkBtn").text("Envoyer le code");
+            $("#emailVerificationDlg").dialog('open');
+        }
+
+        function VerifyCodeFromForm() {
             if ($("#confirmForm")[0].checkValidity()) {
                 let verifyUser = {
-                    Id: parseInt($("#id_input").val()),
-                    VerifyCode: $("#confirm_input").val()
+                    Id: userIdToConfirm,
+                    VerifyCode: $("#verify_code_input").val()
                 };
                 return verifyUser;
             } else {
                 $("#confirmForm")[0].reportValidity()
             }
-
         }
-
         function registerIn() {
             holdCheckETag = true;
-            createMode = true;
-            resetimageForm();
-            ImageUploader.imageRequired('image', true);
+            ImageUploader.imageRequired('avatar', true);
 
             $("#profileDlg").dialog('option', 'title', "Enregistrement");
             $("#profileDlgOkBtn").text("Enregistrer");
             $("#profileDlg").dialog('open');
         }
-
-        function confirmIn() {
-            holdCheckETag = true;
-            createMode = true;
-            resetimageForm();
-            ImageUploader.imageRequired('image', true);
-
-            $("#confirmationDlg").dialog('option', 'title', "Confirmation");
-            $("#confirmationDlgOkBtn").text("Confirmation");
-            $("#confirmationDlg").dialog('open');
-        }
-
         function editimage(e) {
             holdCheckETag = true;
             createMode = false;
@@ -488,6 +483,7 @@
         }
 
         function init_UI() {
+            //updateConnected();
             $("#newImageCmd").click(newImage)
 
             $("#imageDlg").dialog({
@@ -594,9 +590,8 @@
             });
         }
 
-        $("#newConfirmCmd").click(confirmIn)
-        $("#confirmationDlg").dialog({
-            title: "Confirmation du register",
+        $("#emailVerificationDlg").dialog({
+            title: "Confirmation du courriel",
             autoOpen: false,
             modal: true,
             show: { effect: 'fade', speed: 400 },
@@ -609,11 +604,11 @@
             maxHeight: 400,
             position: { my: "top", at: "top", of: window },
             buttons: [{
-                id: "confirmationDlgOkBtn",
+                id: "emailVerificationDlgOkBtn",
                 text: "comfirm",
                 click: function () {
-                    let confirm_verify = VerifyFromForm();
-                    verify(confirm_verify, updateConfirmation, error);
+                    let verifyCode = VerifyCodeFromForm();
+                    verifyEmail(verifyCode, updateConnected, error);
                     $(this).dialog("close");
                 }
             },
@@ -645,14 +640,13 @@
                 text: "register",
                 click: function () {
                     let profile = UserFromForm();
-                    register(profile, updateRegister, error)
                     if (profile) {
                         if (createMode) {
-                            POST(profile, getImagesList, error);
-                            $("#confirmationDlg").dialog('open');
+                            register(profile, showEmailVerificationDlg, error);
+                            $("#emailVerificationDlg").dialog('open');
                         }
                         else
-                            PUT(profile, getImagesList, error);
+                            PUT(profile, updateConnected, error);
                         resetimageForm();
                         holdCheckETag = false;
                         $(this).dialog("close");
@@ -667,7 +661,6 @@
                 }
             }]
         });
-
 
         $("#confirmDeleteDlg").dialog({
             title: "Confirmation !",
