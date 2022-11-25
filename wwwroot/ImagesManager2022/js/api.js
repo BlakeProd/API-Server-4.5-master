@@ -61,13 +61,19 @@ function DELETE(id, successCallBack, errorCallBack) {
     });
 }
 
-function deleteToken(tokeninfo) {
-    
+function deleteToken() {
+    localStorage.removeItem('token')
 }
 
 function storeToken(tokeninfo) {
     localStorage.setItem('token', tokeninfo.Access_token);
 }
+
+function createToken() {
+    let tokenCreation = Math.random().toString(36).substr(2);
+    localStorage.setItem('token', tokenCreation);
+}
+
 function getUserInfo(userId, successCallBack, errorCallBack) {
     $.ajax({
         url: host + "accounts/index/" + userId,
@@ -80,37 +86,56 @@ function getUserInfo(userId, successCallBack, errorCallBack) {
     })
 }
 function login(credentials, successCallBack, errorCallBack) {
-            $.ajax({
-                url: host + "token",
-                type: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify(credentials),
-                success: (tokenInfo) => {
-                    storeToken(tokenInfo);
-                    getUserInfo(tokenInfo.UserId, successCallBack, errorCallBack);
-                },
-                error: function (jqXHR) { errorCallBack(jqXHR.status) }
-            });
-        }
-
-function logout(credentials, successCallBack, errorCallBack) {
-
+    $.ajax({
+        url: host + "token",
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(credentials),
+        success: (tokenInfo) => {
+            storeToken(tokenInfo);
+            getUserInfo(tokenInfo.UserId, successCallBack, errorCallBack);
+        },
+        error: function (jqXHR) { errorCallBack(jqXHR.status) }
+    });
 }
 
-function register(credentials, successCallBack, errorCallBack) {
-            $.ajax({
-                url: host + "token",
-                type: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify(credentials),
-                success: (tokeninfo) => {
-                    storeToken(tokeninfo);
-                    successCallBack(tokeninfo)
-                },
-                error: function (jqXHR) { errorCallBack(jqXHR.status) }
-            });
-        }
+function logout(credentials, successCallBack, errorCallBack) {
+    $.ajax({
+        url: host + "token",
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(credentials),
+        success: (tokeninfo) => {
+            deleteToken();
+            successCallBack(tokeninfo)
+        },
+        error: function (jqXHR) { errorCallBack(jqXHR.status) }
+    });
+}
 
-function confirm() {
+function register(profile, successCallBack, errorCallBack) {
+    $.ajax({
+        url: host + "accounts/register",
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(profile),
+        success: (profile) => {
+            successCallBack(profile)
+        },
+        error: function (jqXHR) { errorCallBack(jqXHR.status) }
+    });
+}
 
-        }
+function verify(verifyUser, successCallBack, errorCallBack) {
+    $.ajax({
+        url: host + "accounts/verify",
+        type: 'GET',
+        contentType: 'application/json',
+        data: JSON.stringify(verifyUser),
+        success: (verifyUser) => {
+            storeToken(verifyUser);
+            successCallBack(verifyUser)
+        },
+        error: function (jqXHR) { errorCallBack(jqXHR.status) }
+    });
+}

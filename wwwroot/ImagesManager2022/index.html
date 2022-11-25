@@ -24,19 +24,22 @@
                 <span class="cmd fa fa-plus-square" id="newImageCmd" title="Ajouter un image"
                     data-toggle="tooltip"></span>
             </div>
+            <div class="connectionPanel">
+                <div class="profil" id="login_info">
+                    <span id="avatar_profile"></span>
+                    <span id="username_profile"></span>
+                    <span class="cmd fa-sharp fa-solid fa-address-book" id="profile" title="Mon Profil"
+                        data-toggle="tooltip"></span>
+                    <span class="cmd fa fa-minus-square" id="newLogoutCmd" title="Se déconnecter"
+                        data-toggle="tooltip"></span>
+                </div>
 
-            <div class="profil" id="login_info">
-                <span id="avatar_profile"></span>
-                <span id="username_profile"></span>
-                <span class="cmd fa-sharp fa-solid fa-address-book" id="profile" title="Mon Profil"
-                    data-toggle="tooltip"></span>
-                <span class="fa-sharp fa-solid fa-arrow-up-from-bracket" id="logout" title="Se déconnecter"
-                    data-toggle="tooltip"></span>
-            </div>
-
-            <div class="relative">
-                <span class="cmd fa fa-minus-square" id="newloginCmd" title="Se connecter" data-toggle="tooltip"></span>
-                <span class="cmd fa fa-registered" id="newRegisterCmd" title="Enregister" data-toggle="tooltip"></span>
+                <div>
+                    <span class="cmd fa-sharp fa-solid fa-arrow-up-from-bracket" id="newloginCmd" title="Se connecter"
+                        data-toggle="tooltip"></span>
+                    <span class="cmd fa fa-registered" id="newRegisterCmd" title="Enregister"
+                        data-toggle="tooltip"></span>
+                </div>
             </div>
         </div>
         <div class="scrollContainer">
@@ -50,6 +53,7 @@
                     <input type="hidden" id="Id_input" value="0">
                     <input type="hidden" id="date_input" value="0">
                     <input type="hidden" id="GUID_input" value="">
+                    <input type="hidden" id="verify_input" value="">
 
                     <label for="title_input">Titre</label>
                     <input type="text" id="title_input" class="form-control" required>
@@ -92,43 +96,46 @@
     </div>
 
     <div>
-        <div id="registerDlg">
-            <form id="registerForm">
-                <input type="hidden" id="Id_input" value="0">
-                <input type="hidden" id="GUID_input" value="">
+        <div>
+            <div id="profileDlg">
+                <form id="registerForm">
+                    <input type="hidden" id="profile_id" value="0">
+                    <input type="hidden" id="profile_AvatarGUID" value="">
 
-                <label for="username_input">Nom d'usager</label>
-                <input id="username_input" class="form-control" required>
+                    <label for="profile_name">Nom d'usager</label>
+                    <input id="profile_name" class="form-control" required>
 
-                <label for="email_input">Adresse courriel</label>
-                <input id="email_input" class="form-control" required>
+                    <label for="profile_email">Adresse courriel</label>
+                    <input id="profile_email" class="form-control" required>
 
-                <label for="password_input">Mot de passe</label>
-                <input type="password" id="password_input" class="form-control" required>
+                    <label for="profile_password">Mot de passe</label>
+                    <input type="password" id="profile_password" class="form-control"
+                        matchedPasswordId="profile_confirm">
 
-                <label for="confirm_input">Confirmation mot de passe</label>
-                <input type="password" id="confirm_input" class="form-control" required>
+                    <label for="profile_confirm">Confirmation mot de passe</label>
+                    <input type="password" id="profile_confirm" class="form-control">
 
-                <label for="image">Image</label>
-                <div id='image' class='ImageUploader' defaultImage='images/No_Image.png'
-                    waitingImage='images/writing.gif'>
-                </div>
-                <div class="note">Cliquez-Déposez une image</div>
-            </form>
-        </div>
-        <div id="confirmDeleteDlg">
-            <span id="confirmationMessage"></span>
-        </div>
-        <div id="errorDlg">
-            <span id="errorMessage"></span>
+                    <label for="avatar">Avatar</label>
+                    <div id='avatar' class='ImageUploader' defaultImage='images/No_Avatar.png'
+                        waitingImage='images/writing.gif'>
+                    </div>
+                    <div style="font-size:12px; color:blue">Cliquez-Déposez un avatar</div>
+                </form>
+            </div>
+            <div id="confirmDeleteDlg">
+                <span id="confirmationMessage"></span>
+            </div>
+            <div id="errorDlg">
+                <span id="errorMessage"></span>
+            </div>
         </div>
     </div>
 
     <div>
-        <div id="confirmDlg">
+        <div id="confirmationDlg">
             <form id="confirmForm">
                 <label for="confirm_input">Confirmation</label>
-                <input id="username_input" class="form-control" required>
+                <input id="confirm_input" class="form-control" required>
             </form>
         </div>
         <div id="confirmDeleteDlg">
@@ -140,7 +147,11 @@
     </div>
 
     <div>
-        <div id="logoutDlg">Voulez-vous vous déconnecter? </div>
+        <div id="logoutDlg">
+            <form id="logoutForm">
+                <div>Voulez-vous vous déconnecter?</div>
+            </form>
+        </div>
         <div id="confirmDeleteDlg">
             <span id="confirmationMessage"></span>
         </div>
@@ -172,7 +183,7 @@
         let appendMode = false;
 
         $("#profile").hide();
-        $("#logout").hide();
+        $("#newLogoutCmd").hide();
 
         init_UI();
         HEAD(checkETag, error);
@@ -298,9 +309,30 @@
         function signOut() {
             holdCheckETag = true;
             createMode = true;
-            $("#loginDlg").dialog('option', 'title', "Se déconnecter");
-            $("#loginDlgOkBtn").text("Déconnexion");
-            $("#loginDlg").dialog('open');
+            $("#logoutDlg").dialog('option', 'title', "Se déconnecter");
+            $("#logoutDlgOkBtn").text("Déconnexion");
+            $("#logoutDlg").dialog('open');
+        }
+
+        function updateRegister() {
+            $("#confirmationDlg").dialog('option', 'title', "Confirmation");
+            $("#confirmationDlgOkBtn").text("Confirmation");
+            $("#confirmationDlg").dialog('open');
+        }
+
+        function updateConfirmation() {
+            let userInfo = retrieveUserInfo();
+            console.log(userInfo)
+            console.log(userInfo.Name)
+            // afficher avatar et nom usager
+            var image = "../images/" + userInfo.AvatarGUID + ".png";
+            $('#avatar').append("<img id='photo' style='height:50px; width:50px; border-radius:50px; border: solid black 2px;' src='" + image + "'; id/>");
+            $("#profile_name").text(userInfo.Name);
+
+            $("#newloginCmd").hide();
+            $("#newRegisterCmd").hide();
+            $("#profile").show();
+            $("#newLogoutCmd").show();
         }
 
         function updateConnected() {
@@ -309,14 +341,31 @@
             console.log(userInfo.Name)
             // afficher avatar et nom usager
             var image = "../images/" + userInfo.AvatarGUID + ".png";
-            $('#avatar_profile').append("<img style='height:50px; width:50px; border-radius:50px; border: solid black 2px;' src='" + image + "'/>");
+            $('#avatar_profile').append("<img id='photo' style='height:50px; width:50px; border-radius:50px; border: solid black 2px;' src='" + image + "'; id/>");
             $("#username_profile").text(userInfo.Name);
 
             $("#newloginCmd").hide();
             $("#newRegisterCmd").hide();
             $("#profile").show();
-            $("#logout").show();
-            //delete bouton login et register
+            $("#newLogoutCmd").show();
+        }
+
+        function updateDisconnect() {
+            let profile = JSON.parse(localStorage.getItem('user'));
+            var userToRemove = profile.Id;
+            const profilPicture = document.getElementById("photo");
+            profilPicture.remove();
+            $("#username_profile").text("");
+
+            localStorage.removeItem('user');
+            localStorage.removeItem('token');
+            console.log(profile);
+
+            $("#newloginCmd").show();
+            $("#newRegisterCmd").show();
+
+            $("#profile").hide();
+            $("#newLogoutCmd").hide();
         }
 
         function retrieveUserInfo() {
@@ -327,8 +376,33 @@
             return { Email: $("#email_input").val(), Password: $("#password_input").val() }
         }
 
-        function retriveRegisterCredentials() {
-            return { Username: $("#username_input").val(), Email: $("#email_input").val(), Password: $("#password_input").val(), AvatarGUID: $("#image") }
+        function UserFromForm() {
+            if ($("#registerForm")[0].checkValidity()) {
+                let profile = {
+                    Id: parseInt($("#profile_id").val()),
+                    Name: $("#profile_name").val(),
+                    Email: $("#profile_email").val(),
+                    Password: $("#profile_password").val(),
+                    AvatarGUID: $("#profile_AvatarGUID").val(),
+                    ImageData: ImageUploader.getImageData('avatar')
+                };
+                return profile;
+            } else {
+                $("#registerForm")[0].reportValidity()
+            }
+        }
+
+        function VerifyFromForm() {
+            if ($("#confirmForm")[0].checkValidity()) {
+                let verifyUser = {
+                    Id: parseInt($("#id_input").val()),
+                    VerifyCode: $("#confirm_input").val()
+                };
+                return verifyUser;
+            } else {
+                $("#confirmForm")[0].reportValidity()
+            }
+
         }
 
         function registerIn() {
@@ -337,13 +411,20 @@
             resetimageForm();
             ImageUploader.imageRequired('image', true);
 
-            $("#registerDlg").dialog('option', 'title', "Enregistrement");
-            $("#registerDlgOkBtn").text("Enregistrer");
-            $("#registerDlg").dialog('open');
+            $("#profileDlg").dialog('option', 'title', "Enregistrement");
+            $("#profileDlgOkBtn").text("Enregistrer");
+            $("#profileDlg").dialog('open');
         }
 
-        function logoutAccount() {
+        function confirmIn() {
+            holdCheckETag = true;
+            createMode = true;
+            resetimageForm();
+            ImageUploader.imageRequired('image', true);
 
+            $("#confirmationDlg").dialog('option', 'title', "Confirmation");
+            $("#confirmationDlgOkBtn").text("Confirmation");
+            $("#confirmationDlg").dialog('open');
         }
 
         function editimage(e) {
@@ -395,6 +476,7 @@
             }
             return false;
         }
+
         function imageToForm(image) {
             $("#Id_input").val(image.Id);
             $("#GUID_input").val(image.GUID);
@@ -404,7 +486,6 @@
             $("#description_input").val(image.Description);
             ImageUploader.setImage('image', image.OriginalURL);
         }
-
 
         function init_UI() {
             $("#newImageCmd").click(newImage)
@@ -452,7 +533,7 @@
             $("#newloginCmd").click(signIn)
 
             $("#loginDlg").dialog({
-                title: "...",
+                title: "Connexion au compte",
                 autoOpen: false,
                 modal: true,
                 show: { effect: 'fade', speed: 400 },
@@ -481,9 +562,9 @@
                 }]
             });
 
-            $("newLogoutCmd").click(logoutAccount)
+            $("#newLogoutCmd").click(signOut)
             $("#logoutDlg").dialog({
-                title: "...",
+                title: "Déconnection du compte",
                 autoOpen: false,
                 modal: true,
                 show: { effect: 'fade', speed: 400 },
@@ -491,15 +572,16 @@
                 width: 340,
                 minWidth: 340,
                 maxWidth: 340,
-                height: 480,
-                minHeight: 480,
-                maxHeight: 480,
+                height: 380,
+                minHeight: 380,
+                maxHeight: 380,
                 position: { my: "top", at: "top", of: window },
                 buttons: [{
-                    id: "...",
+                    id: "logoutDlgOkBtn",
                     text: "logout",
                     click: function () {
-                        
+                        logout(retrieveCredentials(), updateDisconnect, error);
+                        $(this).dialog("close");
                     }
                 },
                 {
@@ -510,11 +592,42 @@
                     }
                 }]
             });
-
         }
 
+        $("#newConfirmCmd").click(confirmIn)
+        $("#confirmationDlg").dialog({
+            title: "Confirmation du register",
+            autoOpen: false,
+            modal: true,
+            show: { effect: 'fade', speed: 400 },
+            hide: { effect: 'fade', speed: 400 },
+            width: 340,
+            minWidth: 340,
+            maxWidth: 340,
+            height: 400,
+            minHeight: 400,
+            maxHeight: 400,
+            position: { my: "top", at: "top", of: window },
+            buttons: [{
+                id: "confirmationDlgOkBtn",
+                text: "comfirm",
+                click: function () {
+                    let confirm_verify = VerifyFromForm();
+                    verify(confirm_verify, updateConfirmation, error);
+                    $(this).dialog("close");
+                }
+            },
+            {
+                text: "Annuler",
+                click: function () {
+                    holdCheckETag = false;
+                    $(this).dialog("close");
+                }
+            }]
+        });
+
         $("#newRegisterCmd").click(registerIn)
-        $("#registerDlg").dialog({
+        $("#profileDlg").dialog({
             title: "...",
             autoOpen: false,
             modal: true,
@@ -528,17 +641,15 @@
             maxHeight: 780,
             position: { my: "top", at: "top", of: window },
             buttons: [{
-                id: "registerDlgOkBtn",
+                id: "profileDlgOkBtn",
                 text: "register",
                 click: function () {
-                    register(retriveRegisterCredentials(), updateConnected, error)
-
-                    let profile = imageFromForm();
-                    add(window.localStorage.getItem('username_input'))
+                    let profile = UserFromForm();
+                    register(profile, updateRegister, error)
                     if (profile) {
                         if (createMode) {
                             POST(profile, getImagesList, error);
-                            $(".scrollContainer").scrollTop(0);
+                            $("#confirmationDlg").dialog('open');
                         }
                         else
                             PUT(profile, getImagesList, error);
@@ -556,7 +667,7 @@
                 }
             }]
         });
-        
+
 
         $("#confirmDeleteDlg").dialog({
             title: "Confirmation !",
