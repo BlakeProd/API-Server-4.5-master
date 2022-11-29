@@ -19,12 +19,12 @@
         "AvatarURL": ""
     },
     {
-        "Id": 3,
-        "Name": "Vincent",
-        "Email": "haha@yopmail.com",
+        "Id": 4,
+        "Name": "Nicolas Lefebvre",
+        "Email": "nicolaslefebvre008@gmail.com",
         "Password": "123123",
-        "AvatarGUID": "2e1db8f0-6d04-11ed-9bc3-4d6ea33183fc",
-        "Created": 1669410024,
+        "AvatarGUID": "302bff10-6fef-11ed-b8a3-15e6cc0db55f",
+        "Created": 1669730861,
         "VerifyCode": "verified"
     }
 ]

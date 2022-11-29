@@ -1,6 +1,14 @@
 const apiBaseURL = "http://localhost:5000/api/images";
 const host = "http://localhost:5000/";
 
+function retrieveAccessToken() {
+    return localStorage.getItem('token');
+}
+
+function getBearerAuthorizationToken() {
+    return { 'Authorization': 'Bearer ' + retrieveAccessToken() };
+}
+
 function HEAD(successCallBack, errorCallBack) {
     $.ajax({
         url: apiBaseURL,
@@ -31,13 +39,14 @@ function POST(data, successCallBack, errorCallBack) {
     $.ajax({
         url: apiBaseURL,
         type: 'POST',
+        headers: getBearerAuthorizationToken(),
         contentType: 'application/json',
         data: JSON.stringify(data),
-        success: (userCreated) => { 
-            successCallBack(userCreated) 
+        success: (userCreated) => {
+            successCallBack(userCreated)
         },
-        error: function (jqXHR) { 
-            errorCallBack(jqXHR.status) 
+        error: function (jqXHR) {
+            errorCallBack(jqXHR.status)
         }
     });
 }
@@ -45,11 +54,12 @@ function PUT(image, successCallBack, errorCallBack) {
     $.ajax({
         url: apiBaseURL + "/" + image.Id,
         type: 'PUT',
+        headers: getBearerAuthorizationToken(),
         contentType: 'application/json',
         data: JSON.stringify(image),
         success: () => { successCallBack() },
-        error: function (jqXHR) { 
-            errorCallBack(jqXHR.status) 
+        error: function (jqXHR) {
+            errorCallBack(jqXHR.status)
         }
     });
 }
@@ -75,7 +85,7 @@ function storeToken(tokeninfo) {
     localStorage.setItem('token', tokeninfo.Access_token);
 }
 
-function createToken() {
+function createToken() { // pas besoin
     let tokenCreation = Math.random().toString(36).substr(2);
     localStorage.setItem('token', tokenCreation);
 }
@@ -91,6 +101,34 @@ function getUserInfo(userId, successCallBack, errorCallBack) {
         error: function (jqXHR) { errorCallBack(jqXHR.status) }
     })
 }
+
+function remove(userId, successCallBack, errorCallBack) {
+    $.ajax({
+        url: host + "accounts/remove/" + userId,
+        type: 'GET',
+        headers: getBearerAuthorizationToken(),
+        contentType: 'application/json',
+        success: () => {
+            successCallBack();
+        },
+        error: function (jqXHR) { errorCallBack(jqXHR.status) }
+    })
+}
+
+function modify(profile, successCallBack, errorCallBack) {
+    $.ajax({
+        url: host + "accounts/modify",
+        type: 'PUT',
+        contentType: 'application/json',
+        data: JSON.stringify(credentials),
+        success: (tokenInfo) => {
+            storeToken(tokenInfo);
+            getUserInfo(tokenInfo.UserId, successCallBack, errorCallBack);
+        },
+        error: function (jqXHR) { errorCallBack(jqXHR.status) }
+    });
+}
+
 function login(credentials, successCallBack, errorCallBack) {
     $.ajax({
         url: host + "token",
@@ -128,8 +166,8 @@ function register(profile, successCallBack, errorCallBack) {
         success: (profile) => {
             successCallBack(profile)
         },
-        error: function (jqXHR) { 
-            errorCallBack(jqXHR.status) 
+        error: function (jqXHR) {
+            errorCallBack(jqXHR.status)
         }
     });
 }
