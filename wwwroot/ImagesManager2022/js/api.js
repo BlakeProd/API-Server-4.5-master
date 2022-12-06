@@ -115,15 +115,16 @@ function remove(userId, successCallBack, errorCallBack) {
     })
 }
 
-function modify(profile, successCallBack, errorCallBack) {
+function modify(userInfo, successCallBack, errorCallBack) {
     $.ajax({
         url: host + "accounts/modify",
         type: 'PUT',
         contentType: 'application/json',
-        data: JSON.stringify(credentials),
-        success: (tokenInfo) => {
-            storeToken(tokenInfo);
-            getUserInfo(tokenInfo.UserId, successCallBack, errorCallBack);
+        data: JSON.stringify(userInfo),
+        headers: getBearerAuthorizationToken(),
+        success: (userInfo) => {
+            storeToken(userInfo);
+            getUserInfo(userInfo, successCallBack, errorCallBack);
         },
         error: function (jqXHR) { errorCallBack(jqXHR.status) }
     });

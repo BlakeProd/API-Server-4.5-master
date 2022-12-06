@@ -14,6 +14,6 @@ module.exports =
             this.addValidator('Description', 'string');
             // this.addValidator('Shared', 'boolean');
             // this.addValidator('GUID', 'string');
-            // this.addValidator('UserId', 'int');
+            // this.addValidator('UserId', 'integer');
         }
     }

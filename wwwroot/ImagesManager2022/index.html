@@ -23,6 +23,8 @@
                 <span class="header">Gestionnaire d'images </span>
                 <span class="cmd fa fa-plus-square" id="newImageCmd" title="Ajouter un image"
                     data-toggle="tooltip"></span>
+                <span class="cmd fa fa-search" title="Afficher/masquer la barre de recherche"
+                    data-toggle="tooltip"></span>
             </div>
             <div class="connectionPanel">
                 <div class="loggedUserAvatarContainer" id="loggedUserAvatarContainer"></div>
@@ -36,6 +38,21 @@
                         data-toggle="tooltip"></span>
                     <span class="cmd fa fa-registered" id="newRegisterCmd" title="Enregister"
                         data-toggle="tooltip"></span>
+                </div>
+            </div>
+            <div id="searchBar">
+                <div class="searchBarLayout">
+                    <select id="searchCategory" class="form-control">
+                        <!-- filled programmatically-->
+                    </select>
+                    <span>
+                        <!-- skip a column -->
+                    </span>
+                    <input type="search" id="searchTitle" class="form-control" placeholder="Recherche de nouvelles" />
+                    <span>
+                        <!-- skip a column -->
+                    </span>
+                    <span class="cmd fa fa-refresh"></span>
                 </div>
             </div>
         </div>
@@ -164,7 +181,28 @@
 
     <div>
         <div id="accountDlg">
+            <form id="accountForm">
+                <input type="hidden" id="account_profile_id" value="0">
+                <input type="hidden" id="account_AvatarGUID" value="">
 
+                <label for="account_name">Nom d'usager</label>
+                <input id="account_name" class="form-control" required>
+
+                <label for="account_email">Adresse courriel</label>
+                <input id="account_email" class="form-control" required>
+
+                <label for="account_password">Mot de passe</label>
+                <input type="password" id="account_password" class="form-control" matchedPasswordId="account_confirm">
+
+                <label for="account_confirm">Confirmation mot de passe</label>
+                <input type="password" id="account_confirm" class="form-control">
+
+                <label for="account_avatar">Avatar</label>
+                <div id='account_avatar' class='ImageUploader' defaultImage='images/No_Avatar.png'
+                    waitingImage='images/writing.gif'>
+                </div>
+                <div style="font-size:12px; color:blue">Cliquez-Déposez un avatar</div>
+            </form>
         </div>
     </div>
 
@@ -269,39 +307,25 @@
             $('[data-toggle="tooltip"]').tooltip();
         }
 
-        function insertProfileInfomation() {
-            let userInfo = retrieveUserInfo();
-            $("#accountDlg").append(
-                $(`<form id="accountForm">
-                        <input type="hidden" id="account_profile_id" value="${userInfo.Id}">
-                        <input type="hidden" id="account_AvatarGUID" value="${userInfo.AvatarGUID}">
-
-                        <label for="account_name">Nom d'usager</label>
-                        <input id="account_name" class="form-control" value="${userInfo.Name}" required>
-
-                        <label for="account_email">Adresse courriel</label>
-                        <input id="account_email" class="form-control" value="${userInfo.Email}" required>
-
-                        <label for="account_password">Mot de passe</label>
-                        <input type="password" id="account_password" class="form-control" matchedPasswordId="account_confirm">
-
-                        <label for="account_confirm">Confirmation mot de passe</label>
-                        <input type="password" id="account_confirm" class="form-control">
-
-                        <label for="account_avatar">Avatar</label>
-                        <div id='account_avatar' class='ImageUploader' defaultImage='images/${userInfo.AvatarGUID}.png'
-                            waitingImage='images/writing.gif'>
-                        </div>
-                        <div style="font-size:12px; color:blue">Cliquez-Déposez un avatar</div>
-                </form>
-                `)
-            );
+        function refreshResearchList(categories) {
+            $("#searchCategory").empty();
+            $("#searchCategory").append("<option value=''>Tous les utilisateurs</option>");
+            for (let item of categories) {
+                let category = item.Name;
+                let selected = (selectedCategory == category ? " selected " : "");
+                $("#searchCategory").append(`<option value='${category}' ${selected}>${category}</option>`)
+            }
         }
 
-        //<label for="avatar">Avatar</label>
-        //<div id='avatar' class='ImageUploader' defaultImage='images/No_Avatar.png'
-        //                waitingImage='images/writing.gif'>
-        //             </div>
+
+        function insertProfileInfomation() {
+            let userInfo = retrieveUserInfo();
+            $("#account_profile_id").val(userInfo.Id);
+            $("#account_AvatarGUID").val(userInfo.AvatarGUID);
+            $("#account_name").val(userInfo.Name);
+            $("#account_email").val(userInfo.Email);
+            ImageUploader.setImage('account_avatar', userInfo.AvatarURL);
+        }
 
         function error(status) {
             let errorMessage = "";
@@ -434,6 +458,11 @@
 
         function retrieveCredentials() {
             return { Email: $("#email_input").val(), Password: $("#password_input").val() }
+        }
+
+        function retreiveModifiedUser() {
+            let userInfo = retrieveUserInfo();
+            return { Id: userInfo.Id, Name: $("#account_name").val(), Email: $("#account_email").val(), Password: $("account_password").val() }
         }
 
         function UserFromForm() {
@@ -592,7 +621,6 @@
             });
 
             $("#newloginCmd").click(signIn)
-
             $("#loginDlg").dialog({
                 title: "Connexion au compte",
                 autoOpen: false,
@@ -770,12 +798,11 @@
             position: { my: "top", at: "top", of: window },
 
             buttons: [{
-
                 id: "accountDlgOkBtn",
                 text: "Modifier",
                 click: function () {
-                    modify()
-                    //login(retrieveCredentials(), updateConnected, error);
+                    let userInfo = retrieveUserInfo();
+                    modify(userInfo, updateConnected, error)
                     $(this).dialog("close");
                 }
             },
