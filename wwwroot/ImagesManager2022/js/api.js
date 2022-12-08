@@ -14,6 +14,7 @@ function HEAD(successCallBack, errorCallBack) {
         url: apiBaseURL,
         type: 'HEAD',
         contentType: 'text/plain',
+        headers: getBearerAuthorizationToken(),
         complete: request => { successCallBack(request.getResponseHeader('ETag')) },
         error: function (jqXHR) { errorCallBack(jqXHR.status) }
     });
@@ -72,6 +73,7 @@ function DELETE(id, successCallBack, errorCallBack) {
     $.ajax({
         url: apiBaseURL + "/" + id,
         type: 'DELETE',
+        headers: getBearerAuthorizationToken(),
         success: () => { successCallBack() },
         error: function (jqXHR) { errorCallBack(jqXHR.status) }
     });
@@ -116,14 +118,15 @@ function remove(userId, successCallBack, errorCallBack) {
 }
 
 function modify(userInfo, successCallBack, errorCallBack) {
+    let BearerToken = getBearerAuthorizationToken();
+    console.log(BearerToken);
     $.ajax({
         url: host + "accounts/modify",
         type: 'PUT',
+        headers: getBearerAuthorizationToken(),
         contentType: 'application/json',
         data: JSON.stringify(userInfo),
-        headers: getBearerAuthorizationToken(),
         success: (userInfo) => {
-            storeToken(userInfo);
             getUserInfo(userInfo, successCallBack, errorCallBack);
         },
         error: function (jqXHR) { errorCallBack(jqXHR.status) }

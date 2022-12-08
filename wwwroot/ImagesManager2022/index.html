@@ -19,7 +19,7 @@
         <div class="headerPanel">
             <div class="headerLayout">
                 <img src="favicon.ico" alt="" data-toggle="tooltip" class="favicon"
-                    title="Gestionnaire d'images' - Auteur Nicolas Chourot - Collège Lionel-Groulx">
+                    title="Gestionnaire d'images - Auteur: Nicolas Lefebvre et Tommy Turpin - Élèves au Collège Lionel-Groulx">
                 <span class="header">Gestionnaire d'images </span>
                 <span class="cmd fa fa-plus-square" id="newImageCmd" title="Ajouter un image"
                     data-toggle="tooltip"></span>
@@ -40,20 +40,21 @@
                         data-toggle="tooltip"></span>
                 </div>
             </div>
-            <div id="searchBar">
-                <div class="searchBarLayout">
-                    <select id="searchCategory" class="form-control">
-                        <!-- filled programmatically-->
-                    </select>
-                    <span>
-                        <!-- skip a column -->
-                    </span>
-                    <input type="search" id="searchTitle" class="form-control" placeholder="Recherche de nouvelles" />
-                    <span>
-                        <!-- skip a column -->
-                    </span>
-                    <span class="cmd fa fa-refresh"></span>
-                </div>
+
+        </div>
+        <div id="searchBar" class="headerPanel">
+            <div class="searchBarLayout">
+                <select id="searchCategory" class="form-control">
+                    <!-- filled programmatically-->
+                </select>
+                <span>
+                    <!-- skip a column -->
+                </span>
+                <input type="search" id="searchTitle" class="form-control" placeholder="Recherche de nouvelles" />
+                <span>
+                    <!-- skip a column -->
+                </span>
+                <span class="cmd fa fa-refresh"></span>
             </div>
         </div>
         <div class="scrollContainer">
@@ -184,6 +185,7 @@
             <form id="accountForm">
                 <input type="hidden" id="account_profile_id" value="0">
                 <input type="hidden" id="account_AvatarGUID" value="">
+                <input type="hidden" id="account_AvatarURL" value="">
 
                 <label for="account_name">Nom d'usager</label>
                 <input id="account_name" class="form-control" required>
@@ -229,7 +231,7 @@
         let appendCount = 3;
         let previousScrollPosition = 0;
         let appendMode = false;
-
+        $("#searchBar").hide();
         $("#newAccountCmd").hide();
         $("#newLogoutCmd").hide();
 
@@ -280,7 +282,9 @@
                                     <a href="${image.OriginalURL}" target="_blank">
                                         <div    class='image' 
                                                 style="background-image:url('${image.ThumbnailURL}')">
+                                                <img src="images/No_Avatar.png" alt="Avatar" width="40px" height="40" border-radius="1000%">
                                         </div>
+                                        
                                     </a>
                                     <div class="imageDate">${convertToFrenchDate(parseInt(image.Date))}</div>
                                 </div>
@@ -316,7 +320,6 @@
                 $("#searchCategory").append(`<option value='${category}' ${selected}>${category}</option>`)
             }
         }
-
 
         function insertProfileInfomation() {
             let userInfo = retrieveUserInfo();
@@ -415,6 +418,7 @@
         }
 
         function updateConnected() {
+
             insertProfileInfomation();
             let userInfo = retrieveUserInfo();
             console.log(userInfo)
@@ -461,8 +465,7 @@
         }
 
         function retreiveModifiedUser() {
-            let userInfo = retrieveUserInfo();
-            return { Id: userInfo.Id, Name: $("#account_name").val(), Email: $("#account_email").val(), Password: $("account_password").val() }
+            return { Id: parseInt($("#account_profile_id").val()), Name: $("#account_name").val(), Email: $("#account_email").val(), Password: $("#account_password").val(), AvatarGUID: $("#account_AvatarGUID").val(), AvatarURL: $("#account_AvatarURL").val() }
         }
 
         function UserFromForm() {
@@ -522,6 +525,7 @@
         }
         function deleteimage(e) {
             holdCheckETag = true;
+            createMode = false;
             imageIdToDelete = e.target.getAttribute("imageid")
             GET_ID(
                 imageIdToDelete,
@@ -533,7 +537,7 @@
             holdCheckETag = true;
             $("#confirmDlg").dialog('option', 'title', "Retrait d'image'...");
             $("#confirmDeleteDlgOkBtn").text("Effacer");
-            $("#confirmDeleteDlg").dialog('open');
+            $("#confirmDlg").dialog('open');
         }
         function resetimageForm() {
             $("#Id_input").val("0");
@@ -578,6 +582,17 @@
 
         function init_UI() {
             //updateConnected();
+
+            $(".fa-refresh").click(e => { getImagesList() })
+            $(".fa-search").click(e => {
+                hideSearchBar = !hideSearchBar;
+                if (hideSearchBar)
+                    $("#searchBar").hide();
+                else
+                    $("#searchBar").show();
+                getImagesList();
+            })
+
             $("#newImageCmd").click(newImage)
 
             $("#imageDlg").dialog({
@@ -769,6 +784,7 @@
                 text: "Oui",
                 click: function () {
                     holdCheckETag = false;
+                    imageIdToDelete = 0;
                     $(this).dialog("close");
                 }
             },
@@ -776,7 +792,6 @@
                 text: "Annuler",
                 click: function () {
                     holdCheckETag = false;
-                    imageIdToDelete = 0;
                     $(this).dialog("close");
                 }
             }]
@@ -801,8 +816,7 @@
                 id: "accountDlgOkBtn",
                 text: "Modifier",
                 click: function () {
-                    let userInfo = retrieveUserInfo();
-                    modify(userInfo, updateConnected, error)
+                    modify(retreiveModifiedUser(), updateConnected, error)
                     $(this).dialog("close");
                 }
             },
