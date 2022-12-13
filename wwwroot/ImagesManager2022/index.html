@@ -63,6 +63,12 @@
             </div>
         </div>
         <div>
+            <div id="confirmDeleteDlg">
+                <span id="confirmationMessage"></span>
+            </div>
+            <div id="errorDlg">
+                <span id="errorMessage"></span>
+            </div>
             <div id="imageDlg">
                 <form id="imageForm">
                     <input type="hidden" id="Id_input" value="0">
@@ -70,27 +76,21 @@
                     <input type="hidden" id="GUID_input" value="">
                     <input type="hidden" id="userId_input" value="0">
 
-
                     <label for="title_input">Titre</label>
                     <input type="text" id="title_input" class="form-control" required>
 
                     <label for="decription_input">Description</label>
                     <textarea id="description_input" class="form-control" required></textarea>
 
+                    <label for="shared_input">Partage</label>
                     <input type="checkbox" id="shared_input" value="true">
-
+                    <br>
                     <label for="image">Image</label>
                     <div id='image' class='ImageUploader' defaultImage='images/No_Image.png'
                         waitingImage='images/writing.gif'>
                     </div>
                     <div class="note">Cliquez-Déposez une image</div>
                 </form>
-            </div>
-            <div id="confirmDeleteDlg">
-                <span id="confirmationMessage"></span>
-            </div>
-            <div id="errorDlg">
-                <span id="errorMessage"></span>
             </div>
         </div>
     </div>
@@ -103,13 +103,9 @@
 
                 <label for="password_input">Mot de passe</label>
                 <input type="password" id="password_input" class="form-control" required>
+
+                <label for="image">Remember me</label>
             </form>
-        </div>
-        <div id="confirmDeleteDlg">
-            <span id="confirmationMessage"></span>
-        </div>
-        <div id="errorDlg">
-            <span id="errorMessage"></span>
         </div>
     </div>
 
@@ -141,12 +137,6 @@
                     <div style="font-size:12px; color:blue">Cliquez-Déposez un avatar</div>
                 </form>
             </div>
-            <div id="confirmDeleteDlg">
-                <span id="confirmationMessage"></span>
-            </div>
-            <div id="errorDlg">
-                <span id="errorMessage">ERREUR D'Enregistrement</span>
-            </div>
         </div>
     </div>
 
@@ -158,12 +148,7 @@
                 <input id="verify_code_input" class="form-control" required>
             </form>
         </div>
-        <div id="confirmDeleteDlg">
-            <span id="confirmationMessage"></span>
-        </div>
-        <div id="errorDlg">
-            <span id="errorMessage"></span>
-        </div>
+
     </div>
 
     <div>
@@ -171,12 +156,6 @@
             <form id="logoutForm">
                 <div>Voulez-vous vous déconnecter?</div>
             </form>
-        </div>
-        <div id="confirmDeleteDlg">
-            <span id="confirmationMessage"></span>
-        </div>
-        <div id="errorDlg">
-            <span id="errorMessage"></span>
         </div>
     </div>
 
@@ -234,6 +213,7 @@
         $("#searchBar").hide();
         $("#newAccountCmd").hide();
         $("#newLogoutCmd").hide();
+        $("#newImageCmd").hide();
 
         init_UI();
         HEAD(checkETag, error);
@@ -262,9 +242,10 @@
         }
         function refreshimagesList(images, ETag) {
             function insertIntoImageList(image) {
-
-                $("#imagesList").append(
-                    $(` 
+                // TODO : Image partagé OU créateur de l'image == celui connecté
+                if (image.Shared) {
+                    $("#imagesList").append(
+                        $(` 
                                 <div class='imageLayout'>
                                     <div class='imageHeader'>
                                         <div class="imageTitle">${image.Title}</div>
@@ -282,14 +263,15 @@
                                     <a href="${image.OriginalURL}" target="_blank">
                                         <div    class='image' 
                                                 style="background-image:url('${image.ThumbnailURL}')">
-                                                <img src="images/No_Avatar.png" alt="Avatar" width="40px" height="40" border-radius="1000%">
+                                                <img src="${image.UserAvatarURL}" alt="Avatar" width="60px" height="60" border-radius="1000%">
                                         </div>
-                                        
                                     </a>
                                     <div class="imageDate">${convertToFrenchDate(parseInt(image.Date))}</div>
                                 </div>
                         `)
-                );
+                    );
+                }
+
             }
             currentETag = ETag;
             previousScrollPosition = $(".scrollContainer").scrollTop();
@@ -301,6 +283,7 @@
             for (let image of images) {
                 insertIntoImageList(image);
             }
+
             $(".scrollContainer").scrollTop(previousScrollPosition);
             $(".editCmd").off();
             $(".deleteCmd").off();
@@ -401,8 +384,9 @@
         }
 
         function updateConfirmation() {
-            insertProfileInfomation();
+
             let userInfo = retrieveUserInfo();
+            insertProfileInfomation();
             console.log(userInfo)
             console.log(userInfo.Name)
             // afficher avatar et nom usager
@@ -414,6 +398,7 @@
             $("#newRegisterCmd").hide();
             $("#newAccountCmd").show();
             $("#newLogoutCmd").show();
+            $("#newImageCmd").show();
             getImagesList();
         }
 
@@ -425,21 +410,41 @@
             console.log(userInfo.Name)
             console.log(userInfo.Id)
 
-            // afficher avatar et nom usager
-            $('#loggedUserAvatarContainer').empty();
-            $('#loggedUserAvatarContainer').append($("<img src='" + userInfo.AvatarURL + "' />"));
-            $("#loggedUserName").text(userInfo.Name);
+            if (userInfo.VerifyCode == "verified") {
+                console.log("HEY!");
+                $('#loggedUserAvatarContainer').empty();
+                $('#loggedUserAvatarContainer').append($("<img src='" + userInfo.AvatarURL + "' />"));
+                $("#loggedUserName").text(userInfo.Name);
 
-            $("#newloginCmd").hide();
-            $("#newRegisterCmd").hide();
-            $("#newAccountCmd").show();
-            $("#newLogoutCmd").show();
-            getImagesList();
+                $("#newloginCmd").hide();
+                $("#newRegisterCmd").hide();
+                $("#newAccountCmd").show();
+                $("#newLogoutCmd").show();
+                $("#newImageCmd").show();
+                getImagesList();
+            }
+            else {
+                console.log("BOO!");
+                $('#loggedUserAvatarContainer').empty();
+                $('#loggedUserAvatarContainer').append($("<img src='" + userInfo.AvatarURL + "' />"));
+                $("#loggedUserName").text(userInfo.Name);
+
+                $("#newloginCmd").hide();
+                $("#newRegisterCmd").hide();
+                $("#newAccountCmd").hide();
+                $("#newLogoutCmd").show();
+                $("#newImageCmd").hide();
+                getImagesList();
+            }
+
+            // afficher avatar et nom usager
+
         }
 
         function updateDisconnect() {
-            let profile = JSON.parse(localStorage.getItem('user'));
-            var userToRemove = profile.Id;
+
+            //let profile = JSON.parse(localStorage.getItem('user'));
+            //var userToRemove = profile.Id;
             //const profilPicture = document.getElementById("photo");
             //profilPicture.remove();
             $('#loggedUserAvatarContainer').empty();
@@ -447,13 +452,13 @@
 
             localStorage.removeItem('user');
             localStorage.removeItem('token');
-            console.log(profile);
 
             $("#newloginCmd").show();
             $("#newRegisterCmd").show();
 
             $("#newAccountCmd").hide();
             $("#newLogoutCmd").hide();
+            $("#newImageCmd").hide();
         }
 
         function retrieveUserInfo() {
@@ -527,6 +532,7 @@
             holdCheckETag = true;
             createMode = false;
             imageIdToDelete = e.target.getAttribute("imageid")
+
             GET_ID(
                 imageIdToDelete,
                 image => {
@@ -534,10 +540,12 @@
                 },
                 error
             );
+
             holdCheckETag = true;
-            $("#confirmDlg").dialog('option', 'title', "Retrait d'image'...");
+
+            $("#confirmDeleteDlg").dialog('option', 'title', "Retrait d'image'...");
             $("#confirmDeleteDlgOkBtn").text("Effacer");
-            $("#confirmDlg").dialog('open');
+            $("#confirmDeleteDlg").dialog('open');
         }
         function resetimageForm() {
             $("#Id_input").val("0");
@@ -576,8 +584,6 @@
             $("#description_input").val(image.Description);
             ImageUploader.setImage('image', image.OriginalURL);
             $("#shared_input").prop("checked", image.Shared);
-
-
         }
 
         function init_UI() {
@@ -592,6 +598,47 @@
                     $("#searchBar").show();
                 getImagesList();
             })
+
+            $("deleteCmd").click(deleteimage)
+            $("#confirmDeleteDlg").dialog({
+                title: "...",
+                autoOpen: false,
+                modal: true,
+                show: { effect: 'fade', speed: 400 },
+                hide: { effect: 'fade', speed: 400 },
+                width: 400,
+                minWidth: 500,
+                maxWidth: 500,
+                height: 600,
+                minHeight: 600,
+                maxHeight: 600,
+                position: { my: "top", at: "top", of: window },
+                buttons: [{
+                    id: "imageDlgOkBtn",
+                    text: "Title will be changed dynamically",
+                    click: function () {
+                        let image = imageFromForm();
+                        if (image) {
+                            if (createMode) {
+                                GET_ID(image, getImagesList, error);
+                                $(".scrollContainer").scrollTop(0);
+                            }
+                            else
+                                PUT(image, getImagesList, error);
+                            resetimageForm();
+                            holdCheckETag = false;
+                            $(this).dialog("close");
+                        }
+                    }
+                },
+                {
+                    text: "Annuler",
+                    click: function () {
+                        holdCheckETag = false;
+                        $(this).dialog("close");
+                    }
+                }]
+            });
 
             $("#newImageCmd").click(newImage)
 
@@ -610,7 +657,7 @@
                 position: { my: "top", at: "top", of: window },
                 buttons: [{
                     id: "imageDlgOkBtn",
-                    text: "Title will be changed dynamically",
+                    text: "Modifier!",
                     click: function () {
                         let image = imageFromForm();
                         if (image) {
@@ -684,7 +731,7 @@
                     id: "logoutDlgOkBtn",
                     text: "logout",
                     click: function () {
-                        logout(retrieveCredentials(), updateDisconnect, error);
+                        logout(retrieveUserInfo(), updateDisconnect, error);
                         $(this).dialog("close");
                     }
                 },
@@ -770,7 +817,8 @@
             }]
         });
 
-        $("#confirmDeleteDlg").dialog({
+
+        $("#confirmDlg").dialog({
             title: "Confirmation !",
             autoOpen: false,
             modal: true,

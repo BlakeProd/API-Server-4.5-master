@@ -87,17 +87,24 @@ function storeToken(tokeninfo) {
     localStorage.setItem('token', tokeninfo.Access_token);
 }
 
-function createToken() { // pas besoin
-    let tokenCreation = Math.random().toString(36).substr(2);
-    localStorage.setItem('token', tokenCreation);
-}
-
 function getUserInfo(userId, successCallBack, errorCallBack) {
     $.ajax({
         url: host + "accounts/index/" + userId,
         type: 'GET',
         success: (userInfo) => {
             localStorage.setItem('user', JSON.stringify(userInfo));
+            successCallBack();
+        },
+        error: function (jqXHR) { errorCallBack(jqXHR.status) }
+    })
+}
+
+function getUserIDInfo(userId, successCallBack, errorCallBack) {
+    $.ajax({
+        url: host + "accounts/index/" + userId,
+        type: 'GET',
+        success: () => {
+            
             successCallBack();
         },
         error: function (jqXHR) { errorCallBack(jqXHR.status) }
@@ -126,8 +133,8 @@ function modify(userInfo, successCallBack, errorCallBack) {
         headers: getBearerAuthorizationToken(),
         contentType: 'application/json',
         data: JSON.stringify(userInfo),
-        success: (userInfo) => {
-            getUserInfo(userInfo, successCallBack, errorCallBack);
+        success: () => {
+            getUserInfo(userInfo.Id, successCallBack, errorCallBack);
         },
         error: function (jqXHR) { errorCallBack(jqXHR.status) }
     });
@@ -147,15 +154,16 @@ function login(credentials, successCallBack, errorCallBack) {
     });
 }
 
-function logout(credentials, successCallBack, errorCallBack) {
+function logout(userInfo, successCallBack, errorCallBack) {
     $.ajax({
-        url: host + "token",
-        type: 'POST',
+        url: host + "accounts/logout/" + userInfo.Id,
+        type: 'GET',
         contentType: 'application/json',
-        data: JSON.stringify(credentials),
+        data: JSON.stringify(userInfo),
         success: (tokeninfo) => {
-            deleteToken();
-            successCallBack(tokeninfo)
+            // deleteToken();
+            storeToken(tokeninfo);
+            successCallBack(tokeninfo);
         },
         error: function (jqXHR) { errorCallBack(jqXHR.status) }
     });
