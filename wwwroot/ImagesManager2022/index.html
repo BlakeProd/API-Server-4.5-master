@@ -38,6 +38,8 @@
                         data-toggle="tooltip"></span>
                     <span class="cmd fa fa-registered" id="newRegisterCmd" title="Enregister"
                         data-toggle="tooltip"></span>
+                    <span class="cmd fa fa-sharp fa-solid fa-check" id="newConfirmCmd" title="Confirmation"
+                        data-toggle="tooltip"></span>
                 </div>
             </div>
 
@@ -104,7 +106,9 @@
                 <label for="password_input">Mot de passe</label>
                 <input type="password" id="password_input" class="form-control" required>
 
-                <label for="image">Remember me</label>
+                <label for="shared_login_input">Remember me</label>
+                <input type="checkbox" id="shared_login_input" value="true">
+                <br>
             </form>
         </div>
     </div>
@@ -214,6 +218,7 @@
         $("#newAccountCmd").hide();
         $("#newLogoutCmd").hide();
         $("#newImageCmd").hide();
+        $("#newConfirmCmd").hide();
 
         init_UI();
         HEAD(checkETag, error);
@@ -243,7 +248,37 @@
         function refreshimagesList(images, ETag) {
             function insertIntoImageList(image) {
                 // TODO : Image partagé OU créateur de l'image == celui connecté
-                if (image.Shared) {
+                //let user = retrieveUserInfo();
+                //console.log(image.Id);
+                if (image.Shared /*|| image.UserId == user.Id*/) {
+                    $("#imagesList").append(
+                        $(` 
+                                <div class='imageLayout'>
+                                    <div class='imageHeader'>
+                                        <div class="imageTitle">${image.Title}</div>
+                                        <div    class="cmd editCmd  fa fa-pencil-square" 
+                                                imageid="${image.Id}" 
+                                                title="Editer ${image.Title}" 
+                                                data-toggle="tooltip">
+                                        </div>
+                                        <div    class="cmd deleteCmd fa fa-window-close" 
+                                                imageid="${image.Id}" 
+                                                title="Effacer ${image.Title}" 
+                                                data-toggle="tooltip">
+                                        </div>
+                                    </div>
+                                    <a href="${image.OriginalURL}" target="_blank">
+                                        <div    class='image' 
+                                                style="background-image:url('${image.ThumbnailURL}')">
+                                                <img src="images/Shared.png" alt="Avatar" width="60px" height="60" border-radius="1000%">
+                                        </div>
+                                    </a>
+                                    <div class="imageDate">${convertToFrenchDate(parseInt(image.Date))}</div>
+                                </div>
+                        `)
+                    );
+                }
+                else {
                     $("#imagesList").append(
                         $(` 
                                 <div class='imageLayout'>
@@ -384,9 +419,9 @@
         }
 
         function updateConfirmation() {
-
-            let userInfo = retrieveUserInfo();
             insertProfileInfomation();
+            let userInfo = retrieveUserInfo();
+
             console.log(userInfo)
             console.log(userInfo.Name)
             // afficher avatar et nom usager
@@ -396,9 +431,11 @@
 
             $("#newloginCmd").hide();
             $("#newRegisterCmd").hide();
+            $("#newConfirmCmd").hide();
             $("#newAccountCmd").show();
             $("#newLogoutCmd").show();
             $("#newImageCmd").show();
+
             getImagesList();
         }
 
@@ -409,6 +446,7 @@
             console.log(userInfo)
             console.log(userInfo.Name)
             console.log(userInfo.Id)
+            $("#newConfirmCmd").show();
 
             if (userInfo.VerifyCode == "verified") {
                 console.log("HEY!");
@@ -418,9 +456,12 @@
 
                 $("#newloginCmd").hide();
                 $("#newRegisterCmd").hide();
+                $("#newConfirmCmd").hide();
                 $("#newAccountCmd").show();
                 $("#newLogoutCmd").show();
                 $("#newImageCmd").show();
+                $("#editCmd").show();
+                $("#deleteCmd").show();
                 getImagesList();
             }
             else {
@@ -433,7 +474,10 @@
                 $("#newRegisterCmd").hide();
                 $("#newAccountCmd").hide();
                 $("#newLogoutCmd").show();
+                $("#newConfirmCmd").show();
                 $("#newImageCmd").hide();
+                $("#editCmd").hide();
+                $("#deleteCmd").hide();
                 getImagesList();
             }
 
@@ -459,6 +503,7 @@
             $("#newAccountCmd").hide();
             $("#newLogoutCmd").hide();
             $("#newImageCmd").hide();
+            $("#newConfirmCmd").hide();
         }
 
         function retrieveUserInfo() {
@@ -745,6 +790,7 @@
             });
         }
 
+        $("#newConfirmCmd").click(updateRegister)
         $("#emailVerificationDlg").dialog({
             title: "Confirmation du courriel",
             autoOpen: false,
@@ -763,7 +809,7 @@
                 text: "comfirm",
                 click: function () {
                     let verifyCode = VerifyCodeFromForm();
-                    verifyEmail(verifyCode, updateConnected, error);
+                    verifyEmail(verifyCode, updateConfirmation, error);
                     $(this).dialog("close");
                 }
             },

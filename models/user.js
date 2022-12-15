@@ -9,6 +9,7 @@ module.exports =
             this.Created = 0;
             this.AvatarGUID = "";
             this.VerifyCode = 0;
+            this.Remember = false;
 
             this.key = "Email";
             this.addValidator('Name', 'string');
