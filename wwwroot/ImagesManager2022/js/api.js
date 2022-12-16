@@ -1,5 +1,5 @@
 const apiBaseURL = "http://localhost:5000/api/images";
-const host = "https://201425339-201581587-pfi.glitch.me/";
+const host = "http://localhost:5000/";
 
 function retrieveAccessToken() {
     return localStorage.getItem('token');
