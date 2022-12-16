@@ -1,5 +1,5 @@
 const apiBaseURL = "http://localhost:5000/api/images";
-const host = "http://localhost:5000/";
+const host = "https://201425339-201581587-pfi.glitch.me/";
 
 function retrieveAccessToken() {
     return localStorage.getItem('token');
@@ -104,7 +104,7 @@ function getUserIDInfo(userId, successCallBack, errorCallBack) {
         url: host + "accounts/index/" + userId,
         type: 'GET',
         success: () => {
-            
+
             successCallBack();
         },
         error: function (jqXHR) { errorCallBack(jqXHR.status) }
