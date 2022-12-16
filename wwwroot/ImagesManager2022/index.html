@@ -201,7 +201,8 @@
     <script src="js/api.js"></script>
     <script src="js/date.js"></script>
     <script defer>
-        const periodicRefreshPeriod = 15;
+        let limit = 4;
+        const periodicRefreshPeriod = 10;
         let holdCheckETag = false;
         let currentETag = "";
         let createMode = true;
@@ -214,6 +215,7 @@
         let appendCount = 3;
         let previousScrollPosition = 0;
         let appendMode = false;
+        let idConnected = 100;
         $("#searchBar").hide();
         $("#newAccountCmd").hide();
         $("#newLogoutCmd").hide();
@@ -234,7 +236,7 @@
         function getImagesList(refresh = true) {
             appendMode = !refresh;
             function prepareQueryString() {
-                let queryString = "";
+                let queryString = appendMode ? "?sort=Date,desc&limit=1" + "&offset=" + limit++ : "?sort=Date,desc&limit=" + limit + "&offset=0";;
                 if (appendMode) {
                     queryString = `?sort=Date,desc&offset=${Math.trunc(imagesCount / appendCount)}&limit=${appendCount}`;
                     imagesCount += appendCount;
@@ -248,9 +250,7 @@
         function refreshimagesList(images, ETag) {
             function insertIntoImageList(image) {
                 // TODO : Image partagé OU créateur de l'image == celui connecté
-                //let user = retrieveUserInfo();
-                //console.log(image.Id);
-                if (image.Shared /*|| image.UserId == user.Id*/) {
+                if (image.Shared && image.UserId == idConnected) {
                     $("#imagesList").append(
                         $(` 
                                 <div class='imageLayout'>
@@ -306,7 +306,6 @@
                         `)
                     );
                 }
-
             }
             currentETag = ETag;
             previousScrollPosition = $(".scrollContainer").scrollTop();
@@ -421,7 +420,7 @@
         function updateConfirmation() {
             insertProfileInfomation();
             let userInfo = retrieveUserInfo();
-
+            idConnected = userInfo.Id;
             console.log(userInfo)
             console.log(userInfo.Name)
             // afficher avatar et nom usager
@@ -429,6 +428,7 @@
             $('#loggedUserAvatarContainer').append($("<img src='" + userInfo.AvatarURL + "' />"));
             $("#loggedUserName").text(userInfo.Name);
 
+            $("#imagesList").show();
             $("#newloginCmd").hide();
             $("#newRegisterCmd").hide();
             $("#newConfirmCmd").hide();
@@ -443,9 +443,8 @@
 
             insertProfileInfomation();
             let userInfo = retrieveUserInfo();
-            console.log(userInfo)
-            console.log(userInfo.Name)
-            console.log(userInfo.Id)
+            idConnected = userInfo.Id;
+
             $("#newConfirmCmd").show();
 
             if (userInfo.VerifyCode == "verified") {
@@ -454,6 +453,7 @@
                 $('#loggedUserAvatarContainer').append($("<img src='" + userInfo.AvatarURL + "' />"));
                 $("#loggedUserName").text(userInfo.Name);
 
+                $("#imagesList").show();
                 $("#newloginCmd").hide();
                 $("#newRegisterCmd").hide();
                 $("#newConfirmCmd").hide();
@@ -470,6 +470,7 @@
                 $('#loggedUserAvatarContainer').append($("<img src='" + userInfo.AvatarURL + "' />"));
                 $("#loggedUserName").text(userInfo.Name);
 
+                $("#imagesList").hide();
                 $("#newloginCmd").hide();
                 $("#newRegisterCmd").hide();
                 $("#newAccountCmd").hide();
@@ -487,10 +488,7 @@
 
         function updateDisconnect() {
 
-            //let profile = JSON.parse(localStorage.getItem('user'));
-            //var userToRemove = profile.Id;
-            //const profilPicture = document.getElementById("photo");
-            //profilPicture.remove();
+            let idConnected = 100;
             $('#loggedUserAvatarContainer').empty();
             $("#loggedUserName").text("");
 
@@ -611,7 +609,6 @@
                     Date: parseInt($("#date_input").val()),
                     Shared: $("#shared_input").prop("checked"),
                     UserId: JSON.parse(localStorage.getItem('user')).Id
-
                 };
                 return image;
             } else {
@@ -702,7 +699,7 @@
                 position: { my: "top", at: "top", of: window },
                 buttons: [{
                     id: "imageDlgOkBtn",
-                    text: "Modifier!",
+                    text: "Modifier/Ajouter!",
                     click: function () {
                         let image = imageFromForm();
                         if (image) {
